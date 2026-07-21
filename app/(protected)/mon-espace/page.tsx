@@ -1,82 +1,159 @@
+import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateTodayEntry, confirmTodayAction } from "@/lib/actions/work-entries";
-import EditDayForm from "./EditDayForm";
+import { getClockStatus, getTodayClockEntries } from "@/lib/actions/clock";
+import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
+import { computeDayMinutes } from "@/lib/hours-engine";
 import MonthlyResponse from "./MonthlyResponse";
 
-const STATUS_LABELS: Record<string, string> = {
-  PRE_REMPLI: "Pré-rempli",
-  CONFIRME: "Confirmé",
-  MODIFIE: "Modifié",
-  A_VALIDER: "À valider",
-  VALIDE: "Validé",
-  REFUSE: "Refusé",
-  CORRIGE: "Corrigé par RH",
-  VERROUILLE: "Verrouillé",
+const STATUS: Record<string, { label: string; dot: string; tone: string }> = {
+  ABSENT: { label: "Pas encore pointé", dot: "bg-ardoise-300", tone: "text-ardoise-500" },
+  PRESENT: { label: "En poste", dot: "bg-faraday-500", tone: "text-faraday-700" },
+  EN_PAUSE: { label: "En pause", dot: "bg-amber-400", tone: "text-amber-700" },
+  JOURNEE_TERMINEE: { label: "Journée terminée", dot: "bg-ardoise-400", tone: "text-ardoise-600" },
 };
+
+function formatHM(minutes: number): string {
+  const m = Math.max(0, Math.round(minutes));
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  return `${h}h${String(mm).padStart(2, "0")}`;
+}
+
+/** Minutes travaillées aujourd'hui à partir des pointages (temps réel). */
+function workedMinutesToday(entries: { action: string; timestamp: Date }[]): number {
+  const sorted = [...entries].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  const start = sorted.find((e) => e.action === "DEBUT_JOURNEE");
+  if (!start) return 0;
+  const lastEnd = [...sorted].reverse().find((e) => e.action === "FIN_JOURNEE");
+  const end = lastEnd ? lastEnd.timestamp : new Date();
+
+  let breakMs = 0;
+  let pauseStart: Date | null = null;
+  for (const e of sorted) {
+    if (e.action === "DEBUT_PAUSE") pauseStart = e.timestamp;
+    else if (e.action === "FIN_PAUSE" && pauseStart) {
+      breakMs += e.timestamp.getTime() - pauseStart.getTime();
+      pauseStart = null;
+    }
+  }
+  if (pauseStart && !lastEnd) breakMs += end.getTime() - pauseStart.getTime();
+  return (end.getTime() - start.timestamp.getTime() - breakMs) / 60000;
+}
 
 export default async function MonEspacePage() {
   const session = await getSession();
   if (!session) return null;
 
-  const entry = await getOrCreateTodayEntry(session.id);
   const now = new Date();
-  const monthly = await prisma.monthlyValidation.findUnique({
-    where: { userId_month_year: { userId: session.id, month: now.getMonth() + 1, year: now.getFullYear() } },
-  });
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+
+  // Début de la semaine (lundi)
+  const weekStart = new Date(todayStart);
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+
+  const [status, todayEntries, weekEntries, monthly] = await Promise.all([
+    getClockStatus(session.id),
+    getTodayClockEntries(session.id),
+    prisma.workEntry.findMany({
+      where: { userId: session.id, date: { gte: weekStart, lt: todayStart } },
+    }),
+    prisma.monthlyValidation.findUnique({
+      where: { userId_month_year: { userId: session.id, month: now.getMonth() + 1, year: now.getFullYear() } },
+    }),
+  ]);
+
+  const todayMin = workedMinutesToday(todayEntries.map((e) => ({ action: e.action, timestamp: e.timestamp })));
+  const weekHistMin = weekEntries
+    .filter((e) => e.actualStart && e.actualEnd)
+    .reduce((sum, e) => sum + computeDayMinutes({ start: e.actualStart!, end: e.actualEnd!, breakMinutes: e.breakMinutes }), 0);
+  const weekMin = weekHistMin + todayMin;
+
+  let overtime = 0;
+  let deficit = 0;
+  let monthWorked = 0;
+  try {
+    const recap = await computeMonthlyRecap(session.id, now.getMonth() + 1, now.getFullYear());
+    overtime = recap.overtimeHours;
+    deficit = recap.deficitHours;
+    monthWorked = recap.totalWorkedHours;
+  } catch {
+    /* pas encore de données ce mois */
+  }
+
+  const s = STATUS[status];
+  const arrival = todayEntries.find((e) => e.action === "DEBUT_JOURNEE");
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="mx-auto max-w-xl space-y-5">
       <div>
-        <h1 className="text-xl font-semibold text-ardoise-900">Bonjour {session.firstName} 👋</h1>
-        <p className="text-sm text-ardoise-500">{now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</p>
+        <h1 className="text-2xl font-semibold text-ardoise-900">Bonjour {session.firstName}</h1>
+        <p className="text-sm capitalize text-ardoise-500">
+          {now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+        </p>
       </div>
 
+      {/* Statut + pointage */}
       <div className="card">
-        <h2 className="mb-2 text-sm font-semibold text-ardoise-900">Horaires prévus aujourd'hui</h2>
-        {entry.plannedStart ? (
-          <p className="text-2xl font-semibold text-faraday-700">
-            {entry.plannedStart} – {entry.plannedEnd}
-          </p>
-        ) : (
-          <p className="text-sm text-ardoise-500">Aucun horaire type défini pour aujourd'hui — contactez le RH.</p>
-        )}
-        <p className="mt-2 text-xs text-ardoise-400">
-          Statut : <span className="badge bg-ardoise-100 text-ardoise-700">{STATUS_LABELS[entry.status]}</span>
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <form action={confirmTodayAction}>
-            <button type="submit" className="btn-primary">Je confirme mes horaires</button>
-          </form>
-          <a href="/absences" className="btn-secondary">Déclarer une absence</a>
-          <a href="/absences" className="btn-secondary">Demander un congé</a>
+        <div className="flex items-center gap-2.5">
+          <span className={`h-2.5 w-2.5 rounded-full ${s.dot}`} />
+          <span className={`text-base font-medium ${s.tone}`}>{s.label}</span>
+          {arrival && status !== "ABSENT" && (
+            <span className="ml-auto text-sm text-ardoise-400">
+              depuis {arrival.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
         </div>
+        <Link
+          href="/pointage"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-faraday-600 py-4 text-base font-medium text-white transition hover:bg-faraday-700"
+        >
+          Pointer maintenant
+        </Link>
       </div>
 
-      <div className="card">
-        <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Modifier mes horaires du jour</h2>
-        <EditDayForm
-          defaultStart={entry.actualStart ?? entry.plannedStart ?? ""}
-          defaultEnd={entry.actualEnd ?? entry.plannedEnd ?? ""}
-          defaultBreak={entry.breakMinutes}
-          locked={entry.locked}
-        />
+      {/* Chiffres clés */}
+      <div className="grid grid-cols-3 gap-3">
+        <Tile label="Aujourd'hui" value={formatHM(todayMin)} />
+        <Tile label="Cette semaine" value={formatHM(weekMin)} />
+        <Tile label="Ce mois" value={`${monthWorked.toFixed(0)}h`} />
       </div>
 
-      <div className="card">
-        <h2 className="mb-2 text-sm font-semibold text-ardoise-900">Récapitulatif du mois</h2>
-        <p className="text-sm text-ardoise-500">
-          Statut de validation mensuelle :{" "}
-          <span className="badge bg-faraday-50 text-faraday-700">
-            {monthly?.status ?? "Pas encore généré"}
-          </span>
-        </p>
-        {monthly && monthly.status === "ENVOYE_AU_SALARIE" && <MonthlyResponse validationId={monthly.id} />}
-        <a href="/validations/mensuelles" className="mt-2 inline-block text-sm text-faraday-600 hover:underline">
-          Voir le détail →
-        </a>
+      {(overtime > 0.1 || deficit > 0.1) && (
+        <div className="flex flex-wrap gap-2 text-sm">
+          {overtime > 0.1 && (
+            <span className="badge bg-faraday-50 text-faraday-700">Heures sup. ce mois : +{overtime.toFixed(1)} h</span>
+          )}
+          {deficit > 0.1 && (
+            <span className="badge bg-amber-50 text-amber-700">Heures manquantes : −{deficit.toFixed(1)} h</span>
+          )}
+        </div>
+      )}
+
+      {/* Actions secondaires */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link href="/absences" className="btn-secondary">Demander des congés</Link>
+        <Link href="/mes-horaires" className="btn-secondary">Voir mes horaires</Link>
       </div>
+
+      {/* Validation mensuelle (seulement si une réponse est attendue) */}
+      {monthly && monthly.status === "ENVOYE_AU_SALARIE" && (
+        <div className="card">
+          <h2 className="mb-2 text-sm font-medium text-ardoise-900">Votre récapitulatif du mois est prêt</h2>
+          <p className="mb-3 text-sm text-ardoise-500">Merci de vérifier et de valider vos heures du mois.</p>
+          <MonthlyResponse validationId={monthly.id} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Tile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl bg-white p-4 text-center shadow-sm ring-1 ring-ardoise-100">
+      <p className="text-xl font-semibold text-ardoise-900">{value}</p>
+      <p className="mt-0.5 text-xs text-ardoise-400">{label}</p>
     </div>
   );
 }

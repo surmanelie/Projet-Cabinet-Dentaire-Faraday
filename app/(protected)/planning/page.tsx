@@ -118,7 +118,11 @@ export default async function PlanningPage({
 
       {isAdminOrRh(session!.role) && (
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Horaires types</h2>
+          <h2 className="text-sm font-semibold text-ardoise-900">Semaine type (se répète chaque semaine)</h2>
+          <p className="mb-3 mt-1 text-xs text-ardoise-500">
+            Réglez l&apos;horaire d&apos;un jour de la semaine pour une personne : il s&apos;appliquera automatiquement
+            chaque semaine, sans avoir à le ressaisir. Un dépassement au pointage compte en heures supplémentaires.
+          </p>
           <ScheduleTemplateForm users={users} />
 
           <div className="mt-4 overflow-x-auto">

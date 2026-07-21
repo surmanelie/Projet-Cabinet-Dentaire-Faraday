@@ -11,6 +11,23 @@ const STATUS_STYLES: Record<string, string> = {
   ANNULE: "bg-ardoise-100 text-ardoise-500",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  DEMANDE: "En attente",
+  ACCEPTE: "Accepté",
+  REFUSE: "Refusé",
+  ANNULE: "Annulé",
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  CONGE_PAYE: "Congé payé",
+  ARRET_MALADIE: "Arrêt maladie",
+  ABSENCE_EXCEPTIONNELLE: "Absence exceptionnelle",
+  ABSENCE_NON_REMUNEREE: "Absence non rémunérée",
+  FORMATION: "Formation",
+  RECUPERATION: "Récupération",
+  AUTRE: "Autre",
+};
+
 export default async function AbsencesPage() {
   const session = await getSession();
   if (!session) return null;
@@ -46,9 +63,9 @@ export default async function AbsencesPage() {
             {mine.map((a) => (
               <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-2">
                 <span>
-                  {a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
+                  {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
                 </span>
-                <span className={`badge ${STATUS_STYLES[a.status]}`}>{a.status}</span>
+                <span className={`badge ${STATUS_STYLES[a.status]}`}>{STATUS_LABELS[a.status] ?? a.status}</span>
               </li>
             ))}
             {mine.length === 0 && <p className="text-ardoise-400">Aucune demande pour le moment.</p>}
@@ -65,7 +82,7 @@ export default async function AbsencesPage() {
                 <div>
                   <p className="font-medium text-ardoise-900">{a.user.firstName} {a.user.lastName}</p>
                   <p className="text-ardoise-500">
-                    {a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
+                    {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
                   </p>
                   {a.comment && <p className="text-xs text-ardoise-400">"{a.comment}"</p>}
                 </div>
