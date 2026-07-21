@@ -6,6 +6,7 @@ import { getSession, verifyPassword } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
 import { writeAuditLog } from "@/lib/audit";
 import { deriveDayFromClock } from "@/lib/clock-hours";
+import { getClientIp, isPinBlocked } from "@/lib/security";
 import type { ClockAction } from "@prisma/client";
 
 // Statuts de WorkEntry issus du workflow de validation : on ne les écrase
@@ -351,6 +352,12 @@ export async function recordClockByPinAction(
   if (!action) return { error: "Action de pointage manquante." };
   if (!/^\d{4}$/.test(pin)) return { error: "Entrez votre code personnel à 4 chiffres." };
 
+  // Anti-force-brute : blocage temporaire d'une IP qui multiplie les codes erronés.
+  const ip = await getClientIp();
+  if (await isPinBlocked(ip)) {
+    return { error: "Trop de tentatives. Patientez quelques minutes avant de réessayer." };
+  }
+
   // Identifie l'assistante active dont le code correspond (comparaison sur
   // le hash — les codes ne sont jamais stockés en clair).
   const candidates = await prisma.user.findMany({
@@ -366,6 +373,7 @@ export async function recordClockByPinAction(
   }
 
   if (!matched) {
+    await writeAuditLog({ actorId: null, action: "CLOCK_PIN_FAILED", entityType: "ClockEntry", ipAddress: ip });
     return { error: "Code personnel incorrect. Réessayez ou contactez l'administrateur." };
   }
 

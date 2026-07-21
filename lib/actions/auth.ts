@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword, hashPassword, createSession, destroySession, getSession } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { defaultRouteForRole } from "@/lib/permissions";
+import { validatePasswordStrength, getClientIp, isLoginBlocked, RATE_LIMITS } from "@/lib/security";
 
 export type LoginResult = { error?: string };
 
@@ -26,9 +27,8 @@ export async function activateAccountAction(
   if (!token) {
     return { error: "Lien d'invitation invalide." };
   }
-  if (!password || password.length < 8) {
-    return { error: "Le mot de passe doit contenir au moins 8 caractères." };
-  }
+  const weak = validatePasswordStrength(password);
+  if (weak) return { error: weak };
   if (password !== confirmPassword) {
     return { error: "Les mots de passe ne correspondent pas." };
   }
@@ -74,6 +74,13 @@ export async function loginAction(
     return { error: "Identifiants invalides ou compte désactivé." };
   }
 
+  // Protection anti-force-brute : blocage temporaire après trop d'échecs.
+  if (await isLoginBlocked(user.id)) {
+    return {
+      error: `Trop de tentatives. Réessayez dans ${RATE_LIMITS.LOGIN_WINDOW_MIN} minutes.`,
+    };
+  }
+
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
     await writeAuditLog({
@@ -81,6 +88,7 @@ export async function loginAction(
       action: "LOGIN_FAILED",
       entityType: "User",
       entityId: user.id,
+      ipAddress: await getClientIp(),
     });
     return { error: "Identifiants invalides ou compte désactivé." };
   }

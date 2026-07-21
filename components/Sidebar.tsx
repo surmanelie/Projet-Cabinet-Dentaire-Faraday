@@ -3,25 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@prisma/client";
-
-type NavItem = { href: string; label: string; roles: Role[] };
-
-const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Tableau de bord", roles: ["ADMIN", "RH"] },
-  { href: "/mon-espace", label: "Mon espace", roles: ["ASSISTANT"] },
-  { href: "/pointage", label: "Pointer", roles: ["ASSISTANT"] },
-  { href: "/mes-horaires", label: "Mes horaires", roles: ["ASSISTANT"] },
-  { href: "/espace-praticien", label: "Mon équipe", roles: ["PRATICIEN"] },
-  { href: "/planning", label: "Planning", roles: ["ADMIN", "RH", "PRATICIEN"] },
-  { href: "/equipe", label: "Équipe", roles: ["ADMIN", "RH"] },
-  { href: "/equipe/pointage", label: "Pointage QR", roles: ["ADMIN", "RH"] },
-  { href: "/absences", label: "Absences", roles: ["ADMIN", "RH", "ASSISTANT", "PRATICIEN"] },
-  { href: "/validations", label: "Validations", roles: ["ADMIN", "RH", "ASSISTANT", "COMPTABLE"] },
-  { href: "/rapports", label: "Rapports", roles: ["ADMIN", "RH", "COMPTABLE"] },
-  { href: "/parametres", label: "Paramètres", roles: ["ADMIN", "RH"] },
-  { href: "/audit", label: "Journal d'audit", roles: ["ADMIN"] },
-  { href: "/aide", label: "Aide", roles: ["ADMIN", "RH", "PRATICIEN", "ASSISTANT", "COMPTABLE"] },
-];
+import { NAV_ITEMS } from "@/lib/nav-items";
 
 export default function Sidebar({ role }: { role: Role }) {
   const pathname = usePathname();

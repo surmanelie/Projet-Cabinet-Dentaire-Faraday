@@ -8,6 +8,7 @@ type AuditParams = {
   entityId?: string;
   oldValue?: unknown;
   newValue?: unknown;
+  ipAddress?: string | null;
 };
 
 /**
@@ -25,6 +26,7 @@ export async function writeAuditLog(params: AuditParams) {
         entityId: params.entityId,
         oldValue: params.oldValue !== undefined ? JSON.stringify(params.oldValue) : null,
         newValue: params.newValue !== undefined ? JSON.stringify(params.newValue) : null,
+        ipAddress: params.ipAddress ?? null,
       },
     });
   } catch (err) {

@@ -47,6 +47,19 @@ export default function UserForm({
   );
   const [role, setRole] = useState(user?.role ?? "ASSISTANT");
   const [copied, setCopied] = useState(false);
+  const [password, setPassword] = useState("");
+  const [clockPin, setClockPin] = useState("");
+
+  function generatePassword() {
+    const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let pw = "";
+    for (let i = 0; i < 10; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    setPassword(pw + "9a");
+  }
+
+  function generatePin() {
+    setClockPin(String(Math.floor(1000 + Math.random() * 9000)));
+  }
 
   // Ferme le modal en édition dès que la sauvegarde réussit.
   if (isEdit && state.success && onDone) {
@@ -146,15 +159,22 @@ export default function UserForm({
               Code de pointage (4 chiffres)
               {isEdit && user?.hasClockPin ? " — un code est défini" : ""}
             </label>
-            <input
-              name="clockPin"
-              inputMode="numeric"
-              pattern="\d{4}"
-              maxLength={4}
-              className="input tracking-[0.4em]"
-              autoComplete="off"
-              placeholder={isEdit && user?.hasClockPin ? "•••• (laisser vide pour garder)" : "ex : 4271"}
-            />
+            <div className="flex gap-2">
+              <input
+                name="clockPin"
+                inputMode="numeric"
+                pattern="\d{4}"
+                maxLength={4}
+                value={clockPin}
+                onChange={(e) => setClockPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                className="input tracking-[0.4em]"
+                autoComplete="off"
+                placeholder={isEdit && user?.hasClockPin ? "•••• (laisser vide pour garder)" : "ex : 4271"}
+              />
+              <button type="button" onClick={generatePin} className="btn-secondary whitespace-nowrap text-xs">
+                Générer
+              </button>
+            </div>
             <p className="mt-1 text-xs text-ardoise-400">
               Ce code personnel permet à l&apos;assistante de pointer via QR code, sans se connecter.
             </p>
@@ -179,13 +199,20 @@ export default function UserForm({
         <label className="label">
           Mot de passe {isEdit ? "(laisser vide pour ne pas changer)" : "(optionnel)"}
         </label>
-        <input
-          name="password"
-          type="text"
-          className="input"
-          autoComplete="off"
-          placeholder={isEdit ? "Nouveau mot de passe…" : "Laisser vide pour envoyer un lien d'invitation"}
-        />
+        <div className="flex gap-2">
+          <input
+            name="password"
+            type="text"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input"
+            autoComplete="off"
+            placeholder={isEdit ? "Nouveau mot de passe…" : "Laisser vide pour envoyer un lien d'invitation"}
+          />
+          <button type="button" onClick={generatePassword} className="btn-secondary whitespace-nowrap text-xs">
+            Générer
+          </button>
+        </div>
         <p className="mt-1 text-xs text-ardoise-400">
           {isEdit
             ? "Si rempli, le mot de passe est remplacé immédiatement (min. 8 caractères)."
