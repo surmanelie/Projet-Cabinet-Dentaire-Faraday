@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #f6f7f8;
-  --foreground: #1a1d21;
+  --background: #f6f4ef;
+  --foreground: #2f3b33;
 }
 
 body {
@@ -14,19 +14,19 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-faraday-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-faraday-700 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-faraday-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-faraday-700 disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-ardoise-200 bg-white px-4 py-2 text-sm font-medium text-ardoise-700 transition hover:bg-ardoise-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-ardoise-200 bg-white px-4 py-2.5 text-sm font-medium text-ardoise-700 transition hover:bg-ardoise-50;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700;
   }
   .card {
-    @apply rounded-xl border border-ardoise-100 bg-white p-5 shadow-sm;
+    @apply rounded-2xl border border-ardoise-100 bg-white p-5 shadow-sm;
   }
   .input {
-    @apply w-full rounded-lg border border-ardoise-200 px-3 py-2 text-sm focus:border-faraday-500 focus:outline-none focus:ring-1 focus:ring-faraday-500;
+    @apply w-full rounded-xl border border-ardoise-200 bg-white px-3.5 py-2.5 text-sm text-ardoise-800 transition placeholder:text-ardoise-400 focus:border-faraday-500 focus:outline-none focus:ring-2 focus:ring-faraday-500/20;
   }
   .label {
     @apply mb-1 block text-sm font-medium text-ardoise-700;
