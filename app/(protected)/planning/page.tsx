@@ -1,159 +1,99 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
+import { getAgendaData, dateKey } from "@/lib/agenda";
+import MonthAgenda from "@/components/MonthAgenda";
+import AgendaUserPicker from "./AgendaUserPicker";
 import ScheduleTemplateForm from "./ScheduleTemplateForm";
-
-// Convention identique à Prisma/JS Date.getDay() : 0 = dimanche ... 6 = samedi.
-const DAYS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-
-function startOfWeek(d: Date) {
-  const date = new Date(d);
-  const day = date.getDay();
-  const diff = (day === 0 ? -6 : 1) - day;
-  date.setDate(date.getDate() + diff);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
 
 export default async function PlanningPage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string }>;
+  searchParams: Promise<{ user?: string; month?: string; year?: string }>;
 }) {
   const session = await getSession();
+  if (!session) return null;
   const params = await searchParams;
-  const baseDate = params.week ? new Date(params.week) : new Date();
-  const monday = startOfWeek(baseDate);
-  const sunday = new Date(monday);
-  sunday.setDate(sunday.getDate() + 6);
+  const admin = isAdminOrRh(session.role);
+
+  const now = new Date();
+  const month = Number(params.month) || now.getMonth() + 1;
+  const year = Number(params.year) || now.getFullYear();
 
   const users = await prisma.user.findMany({
     where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] } },
-    select: { id: true, firstName: true, lastName: true, role: true, color: true },
+    select: { id: true, firstName: true, lastName: true, role: true },
     orderBy: [{ role: "asc" }, { lastName: "asc" }],
   });
 
-  const entries = await prisma.workEntry.findMany({
-    where: { date: { gte: monday, lte: sunday } },
-    include: { user: { select: { firstName: true, lastName: true, color: true } } },
-    orderBy: { date: "asc" },
-  });
+  // Le praticien ne voit que son propre agenda ; l'admin/RH choisit la personne.
+  const selectedId = admin
+    ? params.user && users.some((u) => u.id === params.user)
+      ? params.user
+      : users[0]?.id
+    : session.id;
 
-  const templates = isAdminOrRh(session!.role)
-    ? await prisma.scheduleTemplate.findMany({
-        include: { user: { select: { firstName: true, lastName: true } } },
-        orderBy: [{ userId: "asc" }, { dayOfWeek: "asc" }],
-      })
-    : [];
+  const selected = users.find((u) => u.id === selectedId) ?? null;
 
-  const prevWeek = new Date(monday);
-  prevWeek.setDate(prevWeek.getDate() - 7);
-  const nextWeek = new Date(monday);
-  nextWeek.setDate(nextWeek.getDate() + 7);
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  const q = `user=${selectedId ?? ""}`;
 
-  const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+  if (admin && users.length === 0) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-semibold text-ardoise-900">Planning</h1>
+        <div className="card text-center">
+          <p className="text-ardoise-500">Aucune assistante pour le moment.</p>
+          <Link href="/equipe" className="btn-primary mt-3 inline-flex">Ajouter une assistante</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { templatesByDow, entriesByDate } = selectedId
+    ? await getAgendaData(selectedId, year, month)
+    : { templatesByDow: {}, entriesByDate: {} };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-ardoise-900">
-          Planning — semaine du {monday.toLocaleDateString("fr-FR")} au {sunday.toLocaleDateString("fr-FR")}
-        </h1>
-        <div className="flex gap-2 text-sm">
-          <a className="btn-secondary" href={`/planning?week=${prevWeek.toISOString().slice(0, 10)}`}>
-            ← Semaine précédente
-          </a>
-          <a className="btn-secondary" href={`/planning?week=${nextWeek.toISOString().slice(0, 10)}`}>
-            Semaine suivante →
-          </a>
-        </div>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-ardoise-900">Planning</h1>
+        {admin && (
+          <AgendaUserPicker users={users} selectedId={selectedId ?? ""} month={month} year={year} />
+        )}
       </div>
 
-      <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-ardoise-400">
-              <th className="py-2 pr-4">Utilisateur</th>
-              {weekDates.map((d) => (
-                <th key={d.toISOString()} className="py-2 pr-4">
-                  {DAYS[d.getDay()]}
-                  <br />
-                  {d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-t border-ardoise-100">
-                <td className="py-2 pr-4">
-                  <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: u.color }} />
-                  {u.firstName} {u.lastName}
-                </td>
-                {weekDates.map((d) => {
-                  const entry = entries.find(
-                    (e) => e.userId === u.id && new Date(e.date).toDateString() === d.toDateString()
-                  );
-                  return (
-                    <td key={d.toISOString()} className="py-2 pr-4 text-ardoise-600">
-                      {entry && entry.source === "absence" ? (
-                        <span className="badge bg-amber-50 text-amber-700">{entry.comment ?? "Congé"}</span>
-                      ) : entry && (entry.plannedStart || entry.plannedEnd) ? (
-                        <span>
-                          {entry.plannedStart ?? "—"}-{entry.plannedEnd ?? "—"}
-                        </span>
-                      ) : (
-                        <span className="text-ardoise-300">—</span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {selected && (
+        <p className="text-sm text-ardoise-500">
+          Agenda de <span className="font-medium text-ardoise-700">{selected.firstName} {selected.lastName}</span>
+        </p>
+      )}
 
-      {isAdminOrRh(session!.role) && (
-        <div className="card">
-          <h2 className="text-sm font-semibold text-ardoise-900">Semaine type (se répète chaque semaine)</h2>
-          <p className="mb-3 mt-1 text-xs text-ardoise-500">
-            Réglez l&apos;horaire d&apos;un jour de la semaine pour une personne : il s&apos;appliquera automatiquement
-            chaque semaine, sans avoir à le ressaisir. Un dépassement au pointage compte en heures supplémentaires.
+      <MonthAgenda
+        year={year}
+        month={month}
+        todayKey={dateKey(now)}
+        templatesByDow={templatesByDow}
+        entriesByDate={entriesByDate}
+        prevHref={`/planning?${q}&month=${prevMonth}&year=${prevYear}`}
+        nextHref={`/planning?${q}&month=${nextMonth}&year=${nextYear}`}
+      />
+
+      {admin && selectedId && (
+        <details className="card">
+          <summary className="cursor-pointer text-sm font-medium text-ardoise-900">
+            Modifier la semaine type de {selected?.firstName}
+          </summary>
+          <p className="mb-3 mt-2 text-xs text-ardoise-500">
+            Réglez l&apos;horaire d&apos;un jour : il se répète chaque semaine automatiquement. Un dépassement au
+            pointage compte en heures supplémentaires.
           </p>
-          <ScheduleTemplateForm users={users} />
-
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs uppercase tracking-wide text-ardoise-400">
-                  <th className="py-2">Utilisateur</th>
-                  <th className="py-2">Jour</th>
-                  <th className="py-2">Horaire</th>
-                  <th className="py-2">Pause</th>
-                </tr>
-              </thead>
-              <tbody>
-                {templates.map((t) => (
-                  <tr key={t.id} className="border-t border-ardoise-100">
-                    <td className="py-2">
-                      {t.user.firstName} {t.user.lastName}
-                    </td>
-                    <td className="py-2">{DAYS[t.dayOfWeek]}</td>
-                    <td className="py-2">
-                      {t.startTime} - {t.endTime}
-                    </td>
-                    <td className="py-2">{t.breakStart && t.breakEnd ? `${t.breakStart} - ${t.breakEnd}` : "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          <ScheduleTemplateForm users={users} presetUserId={selectedId} />
+        </details>
       )}
     </div>
   );

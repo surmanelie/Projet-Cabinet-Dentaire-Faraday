@@ -10,18 +10,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Vert sauge — couleur principale (boutons, accents, QR codes)
+        // Vert sauge foncé — couleur principale (boutons, accents, QR codes)
         faraday: {
-          50: "#eef3f0",
-          100: "#dce7e0",
-          200: "#bdd0c6",
-          300: "#97b4a5",
-          400: "#729784",
-          500: "#5e7f6e",
-          600: "#4c6b5b",
-          700: "#3d5649",
-          800: "#2f4237",
-          900: "#22312a",
+          50: "#eef2f0",
+          100: "#d6e2db",
+          200: "#aec7bc",
+          300: "#7fa693",
+          400: "#54806c",
+          500: "#3c6350",
+          600: "#2f5041",
+          700: "#264135",
+          800: "#1d322a",
+          900: "#152521",
         },
         // Neutres chauds (greige) — textes, bordures, fonds discrets
         ardoise: {

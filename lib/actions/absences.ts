@@ -82,12 +82,21 @@ export async function requestAbsenceAction(
     return { error: "Merci de renseigner le type et les dates de l'absence." };
   }
 
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return { error: "Dates invalides." };
+  }
+  if (end < start) {
+    return { error: "La date de fin doit être après la date de début." };
+  }
+
   const absence = await prisma.absence.create({
     data: {
       userId: session.id,
       type,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: start,
+      endDate: end,
       comment: comment || null,
       status: "DEMANDE",
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { requestAbsenceAction, type AbsenceFormResult } from "@/lib/actions/absences";
 
 const TYPES: { value: string; label: string }[] = [
@@ -17,6 +17,8 @@ const initialState: AbsenceFormResult = {};
 
 export default function AbsenceForm() {
   const [state, formAction, pending] = useActionState(requestAbsenceAction, initialState);
+  const today = new Date().toISOString().slice(0, 10);
+  const [start, setStart] = useState("");
 
   return (
     <form action={formAction} className="space-y-3">
@@ -31,11 +33,19 @@ export default function AbsenceForm() {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="label">Date de début</label>
-          <input type="date" name="startDate" required className="input" />
+          <input
+            type="date"
+            name="startDate"
+            required
+            min={today}
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            className="input"
+          />
         </div>
         <div>
           <label className="label">Date de fin</label>
-          <input type="date" name="endDate" required className="input" />
+          <input type="date" name="endDate" required min={start || today} className="input" />
         </div>
       </div>
       <div>
