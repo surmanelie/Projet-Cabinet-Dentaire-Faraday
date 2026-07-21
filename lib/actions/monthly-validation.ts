@@ -43,8 +43,26 @@ export async function computeMonthlyRecap(userId: string, month: number, year: n
       )
     );
 
-  // Une absence acceptée "consomme" les heures contractuelles du jour (approximation : contrat/5j).
-  const absenceHours = absences.length * (contractHours / 5);
+  // Une absence acceptée "consomme" les heures contractuelles des jours ouvrés
+  // qu'elle couvre (lundi→vendredi), au prorata du contrat (contrat / 5 jours).
+  // On compte chaque jour réel de la période (clippée au mois), pas le nombre
+  // de demandes — un congé d'une semaine compte bien 5 jours.
+  const dailyHours = contractHours / 5;
+  let absenceDays = 0;
+  for (const a of absences) {
+    const from = a.startDate > start ? a.startDate : start;
+    const to = a.endDate < end ? a.endDate : end;
+    const cursor = new Date(from);
+    cursor.setHours(0, 0, 0, 0);
+    const lastDay = new Date(to);
+    lastDay.setHours(0, 0, 0, 0);
+    while (cursor <= lastDay) {
+      const dow = cursor.getDay();
+      if (dow !== 0 && dow !== 6) absenceDays++;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  }
+  const absenceHours = absenceDays * dailyHours;
   const adjustmentMinutes = adjustments.reduce((sum, a) => sum + a.minutes, 0);
 
   return computeMonthlySummary({
