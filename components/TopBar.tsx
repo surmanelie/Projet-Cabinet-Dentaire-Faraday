@@ -1,5 +1,6 @@
 import { logoutAction } from "@/lib/actions/auth";
 import NotificationBell from "./NotificationBell";
+import MobileNav from "./MobileNav";
 import type { SessionUser } from "@/types";
 
 type Notif = { id: string; title: string; message: string; link: string | null; createdAt: Date };
@@ -15,7 +16,7 @@ const ROLE_LABELS: Record<string, string> = {
 export default function TopBar({ user, notifications }: { user: SessionUser; notifications: Notif[] }) {
   return (
     <header className="flex items-center justify-between border-b border-ardoise-100 bg-white px-4 py-3 md:px-6">
-      <div className="md:hidden text-sm font-semibold text-ardoise-900">FaradayBoard</div>
+      <MobileNav role={user.role} />
       <div className="ml-auto flex items-center gap-3">
         <NotificationBell notifications={notifications} />
         <div className="text-right">

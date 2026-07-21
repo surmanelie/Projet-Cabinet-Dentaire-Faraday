@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { isAdminOrRh } from "@/lib/permissions";
 import { sendInviteEmail, sendPasswordResetEmail, getAppUrl } from "@/lib/email";
+import { validatePasswordStrength } from "@/lib/security";
 import type { ContractType, Role } from "@prisma/client";
 
 export type UserFormResult = {
@@ -101,8 +102,9 @@ export async function createUserAction(
   const password = String(formData.get("password") ?? "");
   const useDirectPassword = password.trim().length > 0;
 
-  if (useDirectPassword && password.length < 8) {
-    return { error: "Le mot de passe doit contenir au moins 8 caractères." };
+  if (useDirectPassword) {
+    const weak = validatePasswordStrength(password);
+    if (weak) return { error: weak };
   }
 
   const profileData = {
@@ -211,8 +213,9 @@ export async function updateUserAction(
     return { error: "Un autre utilisateur utilise déjà cet email." };
   }
 
-  if (password.trim().length > 0 && password.length < 8) {
-    return { error: "Le mot de passe doit contenir au moins 8 caractères." };
+  if (password.trim().length > 0) {
+    const weak = validatePasswordStrength(password);
+    if (weak) return { error: weak };
   }
 
   // Code de pointage (optionnel) — vide = inchangé.
