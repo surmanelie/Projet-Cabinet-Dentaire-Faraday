@@ -100,7 +100,9 @@ export default async function PlanningPage({
                   );
                   return (
                     <td key={d.toISOString()} className="py-2 pr-4 text-ardoise-600">
-                      {entry ? (
+                      {entry && entry.source === "absence" ? (
+                        <span className="badge bg-amber-50 text-amber-700">{entry.comment ?? "Congé"}</span>
+                      ) : entry && (entry.plannedStart || entry.plannedEnd) ? (
                         <span>
                           {entry.plannedStart ?? "—"}-{entry.plannedEnd ?? "—"}
                         </span>

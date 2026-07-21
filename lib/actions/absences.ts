@@ -9,6 +9,63 @@ import type { AbsenceType } from "@prisma/client";
 
 export type AbsenceFormResult = { error?: string; success?: boolean };
 
+const ABSENCE_LABELS: Record<string, string> = {
+  CONGE_PAYE: "Congé payé",
+  ARRET_MALADIE: "Arrêt maladie",
+  ABSENCE_EXCEPTIONNELLE: "Absence exceptionnelle",
+  ABSENCE_NON_REMUNEREE: "Absence non rémunérée",
+  FORMATION: "Formation",
+  RECUPERATION: "Récupération",
+  AUTRE: "Absence",
+};
+
+/** Renvoie tous les jours (à minuit) entre deux dates incluses. */
+function eachDay(start: Date, end: Date): Date[] {
+  const days: Date[] = [];
+  const d = new Date(start);
+  d.setHours(0, 0, 0, 0);
+  const last = new Date(end);
+  last.setHours(0, 0, 0, 0);
+  while (d <= last) {
+    days.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
+}
+
+/**
+ * Inscrit un congé accepté dans l'emploi du temps réel : chaque jour de la
+ * période devient une journée "absence" (aucune heure attendue), visible dans
+ * le planning. Ne touche pas une journée déjà verrouillée.
+ */
+async function markAbsenceInSchedule(userId: string, start: Date, end: Date, type: string) {
+  const label = ABSENCE_LABELS[type] ?? "Absence";
+  for (const day of eachDay(start, end)) {
+    const existing = await prisma.workEntry.findUnique({ where: { userId_date: { userId, date: day } } });
+    if (existing?.locked) continue;
+    await prisma.workEntry.upsert({
+      where: { userId_date: { userId, date: day } },
+      update: {
+        source: "absence",
+        comment: label,
+        plannedStart: null,
+        plannedEnd: null,
+        actualStart: null,
+        actualEnd: null,
+        breakMinutes: 0,
+      },
+      create: { userId, date: day, source: "absence", comment: label, status: "PRE_REMPLI" },
+    });
+  }
+}
+
+/** Retire les marques d'absence de l'emploi du temps (congé refusé ou annulé). */
+async function clearAbsenceFromSchedule(userId: string, start: Date, end: Date) {
+  await prisma.workEntry.deleteMany({
+    where: { userId, source: "absence", date: { in: eachDay(start, end) } },
+  });
+}
+
 export async function requestAbsenceAction(
   _prev: AbsenceFormResult,
   formData: FormData
@@ -56,15 +113,27 @@ export async function reviewAbsenceAction(absenceId: string, decision: "ACCEPTE"
     data: { status: decision, reviewedById: session.id, reviewedAt: new Date() },
   });
 
+  // Mise à jour automatique de l'emploi du temps selon la décision.
+  if (decision === "ACCEPTE") {
+    await markAbsenceInSchedule(absence.userId, absence.startDate, absence.endDate, absence.type);
+  } else {
+    await clearAbsenceFromSchedule(absence.userId, absence.startDate, absence.endDate);
+  }
+
   await writeAuditLog({ actorId: session.id, action: `ABSENCE_${decision}`, entityType: "Absence", entityId: absenceId });
   await notifyUser(
     absence.userId,
-    decision === "ACCEPTE" ? "Absence acceptée" : "Absence refusée",
-    "La décision a été prise par le RH.",
+    decision === "ACCEPTE" ? "Congé accepté" : "Congé refusé",
+    decision === "ACCEPTE"
+      ? "Votre congé a été accepté et ajouté à votre planning."
+      : "Votre demande de congé a été refusée.",
     "/absences"
   );
 
   revalidatePath("/absences");
+  revalidatePath("/planning");
+  revalidatePath("/equipe/heures");
+  revalidatePath("/mon-espace");
 }
 
 export async function cancelAbsenceAction(absenceId: string) {
@@ -76,6 +145,12 @@ export async function cancelAbsenceAction(absenceId: string) {
   if (absence.userId !== session.id && !isAdminOrRh(session.role)) throw new Error("Non autorisé");
 
   await prisma.absence.update({ where: { id: absenceId }, data: { status: "ANNULE" } });
+  // Si le congé était accepté, on le retire du planning.
+  if (absence.status === "ACCEPTE") {
+    await clearAbsenceFromSchedule(absence.userId, absence.startDate, absence.endDate);
+  }
   await writeAuditLog({ actorId: session.id, action: "CANCEL_ABSENCE", entityType: "Absence", entityId: absenceId });
   revalidatePath("/absences");
+  revalidatePath("/planning");
+  revalidatePath("/mon-espace");
 }
