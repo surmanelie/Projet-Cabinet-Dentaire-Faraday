@@ -1,0 +1,286 @@
+\documentclass[11pt,a4paper]{article}
+
+% ============================================================
+%  FaradayBoard — Mode d'emploi
+%  Compilation : pdflatex (ou via Overleaf : Nouveau projet ->
+%  Téléverser -> déposer ce fichier -> Recompiler).
+% ============================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage[colorlinks=true,linkcolor=faraday,urlcolor=faraday]{hyperref}
+
+% --- Couleurs de la charte ---
+\definecolor{faraday}{HTML}{0F6157}
+\definecolor{faradaylight}{HTML}{E6F2EF}
+\definecolor{ardoise}{HTML}{475569}
+\definecolor{ambre}{HTML}{B45309}
+\definecolor{ambrelight}{HTML}{FEF3C7}
+
+% --- En-tête / pied de page ---
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textcolor{faraday}{\textbf{FaradayBoard}}}
+\rhead{\textcolor{ardoise}{Mode d'emploi}}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Titres de section colorés ---
+\titleformat{\section}{\Large\bfseries\color{faraday}}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{ardoise}}{\thesubsection.}{0.5em}{}
+
+% --- Encadré « astuce / attention » simple (sans package externe) ---
+\newcommand{\encadre}[2]{%
+  \par\smallskip\noindent
+  \colorbox{#1}{\parbox{\dimexpr\linewidth-2\fboxsep}{\smallskip #2\smallskip}}%
+  \par\smallskip}
+\newcommand{\astuce}[1]{\encadre{faradaylight}{\textbf{\textcolor{faraday}{Astuce.}}~#1}}
+\newcommand{\attention}[1]{\encadre{ambrelight}{\textbf{\textcolor{ambre}{Attention.}}~#1}}
+
+% --- Raccourci pour « chemin de menu » ---
+\newcommand{\menu}[1]{\textbf{\textcolor{faraday}{#1}}}
+
+\begin{document}
+
+% ============================================================
+%  Page de titre
+% ============================================================
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\Huge\bfseries\color{faraday} FaradayBoard\par}
+\vspace{0.5cm}
+{\Large Gestion des assistantes, pointage et suivi des heures\par}
+\vspace{1.5cm}
+{\Large\bfseries Mode d'emploi\par}
+\vspace{0.4cm}
+{\large Cabinet Faraday\par}
+\vfill
+{\large\itshape Un guide par rôle : Administrateur et Assistante\par}
+\vspace{1cm}
+{\color{ardoise} Document généré pour la prise en main du logiciel}
+\vspace*{2cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Présentation et accès}
+% ============================================================
+
+FaradayBoard est un logiciel interne au cabinet qui permet~:
+\begin{itemize}[leftmargin=1.4em]
+  \item de gérer les comptes des assistantes (créer, modifier, supprimer)~;
+  \item de faire pointer les assistantes par QR code et code personnel~;
+  \item de calculer automatiquement les heures travaillées (jour, semaine, mois)~;
+  \item de suivre en temps réel qui est présent, en pause ou parti.
+\end{itemize}
+
+\subsection{Adresses pour se connecter}
+
+\begin{tabular}{>{\bfseries}p{4.5cm} p{9.5cm}}
+\toprule
+Depuis l'ordinateur & \url{http://localhost:3000/login} \\
+Depuis un téléphone & \url{http://192.168.1.81:3000/login} \\
+\bottomrule
+\end{tabular}
+
+\attention{Le téléphone et l'ordinateur doivent être sur le \textbf{même réseau Wi-Fi}. L'adresse \texttt{192.168.1.81} est celle de l'ordinateur sur le réseau local~; elle peut changer si l'ordinateur redémarre.}
+
+\subsection{Les deux rôles}
+
+\begin{tabular}{>{\bfseries}p{3.2cm} p{11cm}}
+\toprule
+Administrateur & Accès complet~: gestion des assistantes, horaires, heures, QR codes, corrections. \\
+\addlinespace
+Assistante & Accès à son seul espace personnel~: pointage et consultation de ses propres heures. \\
+\bottomrule
+\end{tabular}
+
+\subsection{Vos identifiants de test}
+
+\begin{tabular}{>{\bfseries}p{3.2cm} p{5.5cm} p{3.2cm}}
+\toprule
+Rôle & Identifiant & Mot de passe \\
+\midrule
+Administrateur & admin@cabinet-faraday.fr & \texttt{Admin1234!} \\
+Assistante (exemple) & assistante@cabinet-faraday.fr & \texttt{Assistante1234!} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\textbf{Code de pointage de l'assistante exemple~: \texttt{1234}}
+
+\astuce{Les assistantes ne sont pas «~écrites en dur~» dans le logiciel~: ce sont de vraies fiches en base de données. L'administrateur peut à tout moment en \textbf{ajouter}, en \textbf{modifier} ou en \textbf{supprimer} depuis l'écran \menu{Équipe}.}
+
+\newpage
+
+% ============================================================
+\section{Mode d'emploi de l'Administrateur}
+% ============================================================
+
+\subsection{Se connecter}
+\begin{enumerate}[leftmargin=1.6em]
+  \item Ouvrir \url{http://localhost:3000/login}.
+  \item Saisir l'identifiant \texttt{admin@cabinet-faraday.fr} et le mot de passe \texttt{Admin1234!}.
+  \item Vous arrivez sur le \menu{Tableau de bord}.
+\end{enumerate}
+
+\subsection{Comprendre l'écran}
+Le menu de gauche (la barre latérale) donne accès à toutes les fonctions. Les entrées utiles à l'administrateur~:
+\begin{itemize}[leftmargin=1.4em]
+  \item \menu{Tableau de bord}~: vue d'ensemble et indicateurs.
+  \item \menu{Équipe}~: la liste de tous les comptes (créer, modifier, supprimer).
+  \item \menu{Pointage QR}~: les 4 QR codes et le suivi en temps réel.
+  \item \menu{Planning}, \menu{Absences}, \menu{Validations}, \menu{Rapports}, \menu{Paramètres}, \menu{Journal d'audit}.
+\end{itemize}
+
+\subsection{Ajouter une assistante}
+\begin{enumerate}[leftmargin=1.6em]
+  \item Menu \menu{Équipe}.
+  \item Dans l'encadré de droite \menu{Ajouter un utilisateur}, remplir~: prénom, nom, email, téléphone (optionnel).
+  \item Choisir le rôle \menu{Assistant(e)}. Un bloc apparaît~: type de contrat, heures par semaine, notes internes, et surtout le \textbf{code de pointage à 4 chiffres}.
+  \item Pour le mot de passe, deux possibilités~:
+    \begin{itemize}[leftmargin=1.2em]
+      \item \textbf{Saisir un mot de passe} directement (l'assistante se connecte tout de suite avec)~;
+      \item \textbf{Laisser vide}~: un lien d'activation est généré, à transmettre à l'assistante pour qu'elle choisisse son mot de passe.
+    \end{itemize}
+  \item Cliquer sur \menu{Créer l'utilisateur}.
+\end{enumerate}
+
+\astuce{Pour le pointage, seul le \textbf{code à 4 chiffres} est nécessaire~; le mot de passe ne sert qu'à consulter son espace personnel en ligne.}
+
+\subsection{Modifier une assistante}
+\begin{enumerate}[leftmargin=1.6em]
+  \item Menu \menu{Équipe}.
+  \item Sur la ligne de la personne, cliquer sur \menu{Modifier}.
+  \item Une fenêtre s'ouvre~: on peut changer le prénom, le nom, l'email, le téléphone, le type de contrat, les heures, les notes.
+  \item Cliquer sur \menu{Enregistrer les modifications}.
+\end{enumerate}
+
+\subsection{Modifier ou définir le code de pointage (4 chiffres)}
+\begin{enumerate}[leftmargin=1.6em]
+  \item Menu \menu{Équipe} puis \menu{Modifier} sur la ligne de l'assistante.
+  \item Dans le champ \menu{Code de pointage (4 chiffres)}, saisir le nouveau code (par exemple \texttt{4271}).
+  \item Laisser ce champ \textbf{vide} pour conserver le code actuel sans le changer.
+  \item Enregistrer.
+\end{enumerate}
+
+\attention{Deux assistantes ne peuvent pas avoir le même code~: le logiciel refuse un code déjà utilisé. Les codes sont enregistrés de façon chiffrée et ne sont jamais affichés en clair~; notez-les au moment où vous les définissez.}
+
+\subsection{Réinitialiser le mot de passe d'une assistante}
+Sur la ligne de la personne (menu \menu{Équipe}), le bouton \menu{Renvoyer l'invitation} génère un nouveau lien d'activation. Vous pouvez aussi, via \menu{Modifier}, saisir directement un nouveau mot de passe.
+
+\subsection{Désactiver ou supprimer une assistante}
+\begin{itemize}[leftmargin=1.4em]
+  \item \menu{Désactiver}~: le compte est conservé mais ne peut plus se connecter ni pointer. Réversible avec \menu{Réactiver}.
+  \item \menu{Supprimer}~: cliquer sur \menu{Supprimer} puis \menu{Confirmer}. La fiche et ses données liées sont effacées définitivement.
+\end{itemize}
+\attention{Le logiciel empêche de supprimer le dernier compte administrateur, et l'administrateur ne peut pas se supprimer lui-même (pour éviter de se bloquer l'accès).}
+
+\subsection{Où trouver et afficher les QR codes de pointage}
+\begin{enumerate}[leftmargin=1.6em]
+  \item Menu \menu{Pointage QR} (dans la barre latérale, réservé à l'administrateur).
+  \item La page affiche les \textbf{4 QR codes}~: Début de journée, Début de pause, Fin de pause, Fin de journée.
+  \item Bouton \menu{Imprimer} pour les afficher à l'accueil, ou laissez-les sur une tablette.
+\end{enumerate}
+\astuce{C'est ici que «~se trouve le code~»~: chaque QR code renvoie vers une page de pointage. L'assistante scanne, tape son code à 4 chiffres, confirme.}
+
+\subsection{Suivre les heures travaillées}
+\begin{itemize}[leftmargin=1.4em]
+  \item Menu \menu{Pointage QR}~: suivi en temps réel (présentes, en pause, journée terminée, absentes) et détail des pointages du jour.
+  \item Menu \menu{Équipe} puis \menu{Suivi des heures}~: pour chaque personne et chaque mois, les heures contractuelles, les heures réellement travaillées, les heures supplémentaires, les heures manquantes et le solde.
+\end{itemize}
+Le calcul est \textbf{automatique}~: dès qu'une assistante pointe (début, pauses, fin), ses heures du jour sont recalculées.
+
+\subsection{Corriger un pointage oublié ou erroné}
+Si une assistante a oublié de scanner (par exemple en partant)~:
+\begin{enumerate}[leftmargin=1.6em]
+  \item Menu \menu{Pointage QR}, section \menu{Correction}.
+  \item Ajouter le pointage manquant ou modifier une heure, en indiquant un \textbf{motif} (obligatoire).
+  \item Chaque correction est tracée (qui, quand, ancienne valeur, motif) dans le \menu{Journal d'audit}.
+\end{enumerate}
+
+\newpage
+
+% ============================================================
+\section{Mode d'emploi de l'Assistante}
+% ============================================================
+
+\subsection{Pointer avec le QR code et son code personnel}
+C'est la fonction principale et elle ne nécessite \textbf{aucune connexion}.
+\begin{enumerate}[leftmargin=1.6em]
+  \item À l'arrivée, \textbf{scanner} avec le téléphone le QR code \menu{Début de journée} affiché au cabinet.
+  \item La page de pointage s'ouvre. Saisir son \textbf{code personnel à 4 chiffres}.
+  \item Appuyer sur \menu{Confirmer}. Un message \menu{Pointage enregistré} s'affiche avec le nom, la date et l'heure.
+  \item Répéter avec les autres QR codes au fil de la journée~:
+    \begin{itemize}[leftmargin=1.2em]
+      \item \menu{Début de pause} en partant en pause~;
+      \item \menu{Fin de pause} en revenant~;
+      \item \menu{Fin de journée} en partant le soir.
+    \end{itemize}
+\end{enumerate}
+\astuce{La saisie du code personnel puis la confirmation valent \textbf{signature électronique} du pointage. L'heure enregistrée est celle du serveur, elle ne peut pas être modifiée par l'assistante.}
+
+\subsection{Les règles à connaître}
+Le logiciel refuse les pointages incohérents et affiche un message clair~:
+\begin{itemize}[leftmargin=1.4em]
+  \item impossible de faire «~Fin de journée~» sans avoir fait «~Début de journée~»~;
+  \item impossible de faire deux «~Début de journée~» de suite~;
+  \item impossible de terminer une pause qui n'a pas été commencée.
+\end{itemize}
+
+\subsection{Consulter ses heures}
+En se connectant à son espace (identifiant + mot de passe fournis par l'administrateur)~:
+\begin{itemize}[leftmargin=1.4em]
+  \item \menu{Mon espace}~: statut du jour et informations personnelles~;
+  \item \menu{Pointage QR}~: l'historique des pointages du jour~;
+  \item \menu{Mes horaires}~: le récapitulatif des heures.
+\end{itemize}
+L'assistante ne voit que \textbf{ses propres} données et ne peut pas modifier ses heures ni celles des autres.
+
+\newpage
+
+% ============================================================
+\section{Dépannage}
+% ============================================================
+
+\begin{tabular}{>{\bfseries}p{5.2cm} p{9cm}}
+\toprule
+La page ne s'ouvre pas & Vérifier que le serveur est démarré (sur l'ordinateur, la commande \texttt{npm run dev} dans le dossier du projet). \\
+\addlinespace
+Le téléphone ne charge pas & Téléphone et ordinateur sur le même Wi-Fi. Si besoin, autoriser le port 3000 dans le pare-feu Windows. \\
+\addlinespace
+«~Code personnel incorrect~» & Le code n'existe pas, est mal saisi, ou l'assistante est désactivée. L'administrateur peut redéfinir le code depuis \menu{Équipe} > \menu{Modifier}. \\
+\addlinespace
+«~Identifiants invalides~» & Vérifier l'email et le mot de passe. Le serveur doit être démarré. \\
+\bottomrule
+\end{tabular}
+
+% ============================================================
+\section{Prochaine étape : mise en ligne}
+% ============================================================
+Aujourd'hui, le logiciel tourne sur l'ordinateur du cabinet et s'utilise sur le réseau local (Wi-Fi). Pour y accéder depuis n'importe où (et sans laisser l'ordinateur allumé), il faudra \textbf{héberger le site en ligne}. Cela implique~:
+\begin{itemize}[leftmargin=1.4em]
+  \item choisir un hébergeur adapté (par exemple une plateforme compatible Next.js)~;
+  \item mettre la base de données sur un serveur~;
+  \item configurer une adresse web (nom de domaine) et le HTTPS~;
+  \item régler l'envoi d'emails (invitations) si souhaité.
+\end{itemize}
+Cette étape sera préparée séparément.
+
+\vfill
+\begin{center}
+\textcolor{ardoise}{\itshape FaradayBoard — Cabinet Faraday}
+\end{center}
+
+\end{document}

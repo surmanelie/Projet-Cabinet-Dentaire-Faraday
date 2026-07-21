@@ -1,0 +1,354 @@
+// Schéma de données FaradayBoard — Cabinet Faraday
+// Aucune donnée métier (utilisateurs, horaires, règles) n'est en dur :
+// tout est administrable depuis l'application et stocké ici.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  RH
+  PRATICIEN
+  ASSISTANT
+  COMPTABLE
+}
+
+enum ContractType {
+  TEMPS_PLEIN
+  TEMPS_PARTIEL
+  AUTRE
+}
+
+enum WorkEntryStatus {
+  PRE_REMPLI
+  CONFIRME
+  MODIFIE
+  A_VALIDER
+  VALIDE
+  REFUSE
+  CORRIGE
+  VERROUILLE
+}
+
+enum AbsenceType {
+  CONGE_PAYE
+  ARRET_MALADIE
+  ABSENCE_EXCEPTIONNELLE
+  ABSENCE_NON_REMUNEREE
+  FORMATION
+  RECUPERATION
+  AUTRE
+}
+
+enum AbsenceStatus {
+  DEMANDE
+  ACCEPTE
+  REFUSE
+  ANNULE
+}
+
+enum AdjustmentType {
+  AJOUT
+  DEDUCTION
+  CORRECTION_ADMIN
+}
+
+enum MonthlyValidationStatus {
+  EN_PREPARATION
+  ENVOYE_AU_SALARIE
+  VALIDE_SALARIE
+  REFUSE_SALARIE
+  VALIDE_RH
+  VERROUILLE
+}
+
+enum ReportType {
+  PDF_MENSUEL_SALARIE
+  PDF_GLOBAL_COMPTABLE
+  CSV_COMPTABLE
+}
+
+enum ClockAction {
+  DEBUT_JOURNEE
+  DEBUT_PAUSE
+  FIN_PAUSE
+  FIN_JOURNEE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  active       Boolean  @default(true)
+  phone        String?
+  color        String   @default("#3f7e75")
+  clockPinHash String?  // code personnel de pointage (4 chiffres), stocké hashé
+  mustChangePassword Boolean @default(false)
+  inviteToken       String?   @unique
+  inviteTokenExpiresAt DateTime?
+  invitedById       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  permissions  UserPermission[]
+  practitionerProfile PractitionerProfile?
+  assistantProfile    AssistantProfile?
+
+  clockEntries        ClockEntry[]       @relation("ClockEntryOwner")
+  editedClockEntries  ClockEntry[]       @relation("ClockEntryEditor")
+
+  assignmentsAsAssistant   AssistantPractitionerAssignment[] @relation("AssistantAssignments")
+  assignmentsAsPractitioner AssistantPractitionerAssignment[] @relation("PractitionerAssignments")
+
+  scheduleTemplates ScheduleTemplate[]
+  workEntries       WorkEntry[]        @relation("WorkEntryOwner")
+  createdEntries    WorkEntry[]        @relation("WorkEntryCreator")
+  validatedEntries  WorkEntry[]        @relation("WorkEntryValidator")
+
+  absences          Absence[]          @relation("AbsenceOwner")
+  reviewedAbsences  Absence[]          @relation("AbsenceReviewer")
+
+  adjustments       Adjustment[]       @relation("AdjustmentOwner")
+  createdAdjustments Adjustment[]      @relation("AdjustmentCreator")
+
+  monthlyValidations MonthlyValidation[]
+  reports            Report[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+
+  @@index([role])
+}
+
+model UserPermission {
+  id            String  @id @default(cuid())
+  userId        String
+  permissionKey String
+  enabled       Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionKey])
+}
+
+model PractitionerProfile {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  specialty String?
+  room      String?
+  notes     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AssistantProfile {
+  id                  String       @id @default(cuid())
+  userId              String       @unique
+  contractType        ContractType @default(TEMPS_PLEIN)
+  weeklyContractHours Float        @default(35)
+  startDate           DateTime?
+  notes               String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AssistantPractitionerAssignment {
+  id            String    @id @default(cuid())
+  assistantId   String
+  practitionerId String
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  active        Boolean   @default(true)
+
+  assistant   User @relation("AssistantAssignments", fields: [assistantId], references: [id], onDelete: Cascade)
+  practitioner User @relation("PractitionerAssignments", fields: [practitionerId], references: [id], onDelete: Cascade)
+
+  @@index([assistantId])
+  @@index([practitionerId])
+}
+
+model ScheduleTemplate {
+  id         String   @id @default(cuid())
+  userId     String
+  name       String   @default("Horaire type")
+  dayOfWeek  Int      // 0 = dimanche ... 6 = samedi
+  startTime  String   // "08:30"
+  endTime    String   // "18:30"
+  breakStart String?
+  breakEnd   String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dayOfWeek])
+}
+
+model WorkEntry {
+  id            String          @id @default(cuid())
+  userId        String
+  date          DateTime
+  plannedStart  String?
+  plannedEnd    String?
+  actualStart   String?
+  actualEnd     String?
+  breakMinutes  Int             @default(0)
+  status        WorkEntryStatus @default(PRE_REMPLI)
+  source        String          @default("template") // template | manuel | import
+  comment       String?
+  createdById   String?
+  validatedById String?
+  validatedAt   DateTime?
+  locked        Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user        User  @relation("WorkEntryOwner", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy   User? @relation("WorkEntryCreator", fields: [createdById], references: [id])
+  validatedBy User? @relation("WorkEntryValidator", fields: [validatedById], references: [id])
+
+  @@unique([userId, date])
+  @@index([date])
+  @@index([status])
+}
+
+model Absence {
+  id           String        @id @default(cuid())
+  userId       String
+  type         AbsenceType
+  startDate    DateTime
+  endDate      DateTime
+  status       AbsenceStatus @default(DEMANDE)
+  comment      String?
+  attachmentPath String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user       User  @relation("AbsenceOwner", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("AbsenceReviewer", fields: [reviewedById], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Adjustment {
+  id          String         @id @default(cuid())
+  userId      String
+  date        DateTime
+  minutes     Int
+  reason      String
+  type        AdjustmentType @default(CORRECTION_ADMIN)
+  createdById String?
+  createdAt   DateTime       @default(now())
+
+  user      User  @relation("AdjustmentOwner", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("AdjustmentCreator", fields: [createdById], references: [id])
+
+  @@index([userId, date])
+}
+
+model MonthlyValidation {
+  id                String                  @id @default(cuid())
+  userId            String
+  month             Int
+  year              Int
+  status            MonthlyValidationStatus @default(EN_PREPARATION)
+  employeeValidatedAt DateTime?
+  employeeComment   String?
+  rhValidatedAt     DateTime?
+  rhComment         String?
+  lockedAt          DateTime?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+  @@index([year, month])
+}
+
+model Report {
+  id           String     @id @default(cuid())
+  type         ReportType
+  month        Int?
+  year         Int?
+  filePath     String
+  generatedById String?
+  createdAt    DateTime   @default(now())
+
+  generatedBy User? @relation(fields: [generatedById], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  oldValue   String?
+  newValue   String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model ClockEntry {
+  id                String      @id @default(cuid())
+  userId            String
+  action            ClockAction
+  timestamp         DateTime    @default(now())
+  source            String      @default("qr") // qr | admin
+  editedById        String?
+  editReason        String?
+  originalTimestamp DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user     User  @relation("ClockEntryOwner", fields: [userId], references: [id], onDelete: Cascade)
+  editedBy User? @relation("ClockEntryEditor", fields: [editedById], references: [id])
+
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model CabinetSettings {
+  id               String  @id @default("default")
+  name             String  @default("Cabinet Faraday")
+  address          String?
+  logoPath         String?
+  timezone         String  @default("Europe/Paris")
+  openingHours     String? // JSON libre
+  roundingPolicy   String  @default("EXACT") // EXACT | FIVE_MIN | FIFTEEN_MIN
+  allowFutureEdits Boolean @default(true)
+  allowLeaveRequests Boolean @default(true)
+  smtpConfigJson   String?
+  rulesConfigJson  String  @default("{}")
+}

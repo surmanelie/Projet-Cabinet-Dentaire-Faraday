@@ -1,0 +1,81 @@
+import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { isAdminOrRh } from "@/lib/permissions";
+import AbsenceForm from "./AbsenceForm";
+import ReviewButtons from "./ReviewButtons";
+
+const STATUS_STYLES: Record<string, string> = {
+  DEMANDE: "bg-amber-50 text-amber-700",
+  ACCEPTE: "bg-faraday-50 text-faraday-700",
+  REFUSE: "bg-red-50 text-red-700",
+  ANNULE: "bg-ardoise-100 text-ardoise-500",
+};
+
+export default async function AbsencesPage() {
+  const session = await getSession();
+  if (!session) return null;
+  const canReview = isAdminOrRh(session.role);
+
+  const [mine, pending] = await Promise.all([
+    prisma.absence.findMany({
+      where: { userId: session.id },
+      orderBy: { startDate: "desc" },
+      take: 20,
+    }),
+    canReview
+      ? prisma.absence.findMany({
+          where: { status: "DEMANDE" },
+          include: { user: true },
+          orderBy: { startDate: "asc" },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="space-y-4">
+        <h1 className="text-xl font-semibold text-ardoise-900">Absences & congés</h1>
+        <div className="card">
+          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Nouvelle demande</h2>
+          <AbsenceForm />
+        </div>
+
+        <div className="card">
+          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Mes demandes</h2>
+          <ul className="space-y-2 text-sm">
+            {mine.map((a) => (
+              <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-2">
+                <span>
+                  {a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
+                </span>
+                <span className={`badge ${STATUS_STYLES[a.status]}`}>{a.status}</span>
+              </li>
+            ))}
+            {mine.length === 0 && <p className="text-ardoise-400">Aucune demande pour le moment.</p>}
+          </ul>
+        </div>
+      </div>
+
+      {canReview && (
+        <div className="card">
+          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Demandes en attente de validation</h2>
+          <ul className="space-y-3 text-sm">
+            {pending.map((a) => (
+              <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-3">
+                <div>
+                  <p className="font-medium text-ardoise-900">{a.user.firstName} {a.user.lastName}</p>
+                  <p className="text-ardoise-500">
+                    {a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
+                  </p>
+                  {a.comment && <p className="text-xs text-ardoise-400">"{a.comment}"</p>}
+                </div>
+                <ReviewButtons absenceId={a.id} />
+              </li>
+            ))}
+            {pending.length === 0 && <p className="text-ardoise-400">Aucune demande en attente.</p>}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
