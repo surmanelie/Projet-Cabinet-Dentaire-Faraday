@@ -96,7 +96,7 @@ export default function PinClockForm({ action }: { action: string }) {
         <button
           type="submit"
           disabled={pending || pin.length !== 4}
-          className={`w-full rounded-2xl py-5 text-lg font-semibold text-white transition ${info.color} disabled:opacity-50`}
+          className="w-full rounded-2xl bg-faraday-600 py-5 text-lg font-medium text-white transition hover:bg-faraday-700 disabled:opacity-50"
         >
           {pending ? "Enregistrement…" : `Confirmer — ${info.label}`}
         </button>
