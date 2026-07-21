@@ -52,7 +52,8 @@ On utilise 3 services **gratuits** :
 
    | Nom | Valeur |
    |---|---|
-   | `DATABASE_URL` | la chaîne Neon copiée à l'étape 1 |
+   | `DATABASE_URL` | la chaîne Neon **avec** `-pooler` dans l'adresse |
+   | `DIRECT_URL` | la même chaîne **sans** `-pooler` |
    | `SESSION_SECRET` | voir ci-dessous |
 
    Clé `SESSION_SECRET` déjà générée pour vous (copiez-la telle quelle) :
