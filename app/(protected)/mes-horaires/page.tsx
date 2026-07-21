@@ -1,66 +1,43 @@
-import { subDays } from "date-fns";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getAgendaData, dateKey } from "@/lib/agenda";
+import MonthAgenda from "@/components/MonthAgenda";
 
-const STATUS_STYLES: Record<string, string> = {
-  PRE_REMPLI: "bg-ardoise-100 text-ardoise-700",
-  CONFIRME: "bg-faraday-50 text-faraday-700",
-  MODIFIE: "bg-amber-50 text-amber-700",
-  A_VALIDER: "bg-amber-50 text-amber-700",
-  VALIDE: "bg-faraday-100 text-faraday-800",
-  REFUSE: "bg-red-50 text-red-700",
-  CORRIGE: "bg-ardoise-100 text-ardoise-700",
-  VERROUILLE: "bg-ardoise-200 text-ardoise-700",
-};
-
-export default async function MesHorairesPage() {
+export default async function MesHorairesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string; year?: string }>;
+}) {
   const session = await getSession();
   if (!session) return null;
 
-  const entries = await prisma.workEntry.findMany({
-    where: { userId: session.id, date: { gte: subDays(new Date(), 30) } },
-    orderBy: { date: "desc" },
-  });
+  const now = new Date();
+  const params = await searchParams;
+  const month = Number(params.month) || now.getMonth() + 1;
+  const year = Number(params.year) || now.getFullYear();
+
+  const { templatesByDow, entriesByDate } = await getAgendaData(session.id, year, month);
+
+  const prevMonth = month === 1 ? 12 : month - 1;
+  const prevYear = month === 1 ? year - 1 : year;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-ardoise-900">Mes horaires — 30 derniers jours</h1>
-
-      <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-ardoise-400">
-              <th className="py-2">Date</th>
-              <th className="py-2">Prévu</th>
-              <th className="py-2">Réalisé</th>
-              <th className="py-2">Pause</th>
-              <th className="py-2">Statut</th>
-              <th className="py-2">Commentaire</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e) => (
-              <tr key={e.id} className="border-t border-ardoise-100">
-                <td className="py-2">{e.date.toLocaleDateString("fr-FR")}</td>
-                <td className="py-2">{e.plannedStart ? `${e.plannedStart}–${e.plannedEnd}` : "—"}</td>
-                <td className="py-2">{e.actualStart ? `${e.actualStart}–${e.actualEnd}` : "—"}</td>
-                <td className="py-2">{e.breakMinutes} min</td>
-                <td className="py-2">
-                  <span className={`badge ${STATUS_STYLES[e.status]}`}>{e.status}</span>
-                </td>
-                <td className="py-2 text-ardoise-500">{e.comment ?? "—"}</td>
-              </tr>
-            ))}
-            {entries.length === 0 && (
-              <tr>
-                <td colSpan={6} className="py-6 text-center text-ardoise-400">
-                  Aucune entrée enregistrée sur cette période.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div>
+        <h1 className="text-2xl font-semibold text-ardoise-900">Mon agenda</h1>
+        <p className="text-sm text-ardoise-500">Vos horaires prévus, vos congés et vos heures pointées.</p>
       </div>
+
+      <MonthAgenda
+        year={year}
+        month={month}
+        todayKey={dateKey(now)}
+        templatesByDow={templatesByDow}
+        entriesByDate={entriesByDate}
+        prevHref={`/mes-horaires?month=${prevMonth}&year=${prevYear}`}
+        nextHref={`/mes-horaires?month=${nextMonth}&year=${nextYear}`}
+      />
     </div>
   );
 }

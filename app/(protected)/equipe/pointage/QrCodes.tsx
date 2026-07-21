@@ -39,7 +39,7 @@ export default function QrCodes() {
           const targetUrl = baseUrl ? `${baseUrl}/pointer/${a.slug}` : "";
           // quickchart.io génère le QR code côté serveur, sans dépendance npm.
           const qrSrc = targetUrl
-            ? `https://quickchart.io/qr?text=${encodeURIComponent(targetUrl)}&size=200&margin=2&dark=3d5649&light=ffffff`
+            ? `https://quickchart.io/qr?text=${encodeURIComponent(targetUrl)}&size=200&margin=2&dark=264135&light=ffffff`
             : "";
 
           return (

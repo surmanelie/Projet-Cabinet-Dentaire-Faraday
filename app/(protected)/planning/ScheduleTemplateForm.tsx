@@ -8,8 +8,14 @@ const DAYS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Sa
 
 type Person = { id: string; firstName: string; lastName: string };
 
-export default function ScheduleTemplateForm({ users }: { users: Person[] }) {
-  const [userId, setUserId] = useState("");
+export default function ScheduleTemplateForm({
+  users,
+  presetUserId,
+}: {
+  users: Person[];
+  presetUserId?: string;
+}) {
+  const [userId, setUserId] = useState(presetUserId ?? "");
   const [dayOfWeek, setDayOfWeek] = useState(1);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
@@ -31,17 +37,19 @@ export default function ScheduleTemplateForm({ users }: { users: Person[] }) {
         });
       }}
     >
-      <div>
-        <label className="label">Utilisateur</label>
-        <select className="input" value={userId} onChange={(e) => setUserId(e.target.value)}>
-          <option value="">Choisir...</option>
-          {users.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.firstName} {u.lastName}
-            </option>
-          ))}
-        </select>
-      </div>
+      {!presetUserId && (
+        <div>
+          <label className="label">Utilisateur</label>
+          <select className="input" value={userId} onChange={(e) => setUserId(e.target.value)}>
+            <option value="">Choisir...</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.firstName} {u.lastName}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div>
         <label className="label">Jour</label>
         <select className="input" value={dayOfWeek} onChange={(e) => setDayOfWeek(Number(e.target.value))}>
