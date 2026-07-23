@@ -24,5 +24,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/planning", label: "Planning", roles: ["PRATICIEN"] },
 
   // Commun
+  { href: "/messages", label: "Messagerie", roles: ["ADMIN", "RH", "PRATICIEN", "ASSISTANT", "COMPTABLE"] },
   { href: "/aide", label: "Aide", roles: ["ADMIN", "RH", "PRATICIEN", "ASSISTANT", "COMPTABLE"] },
 ];
