@@ -11,7 +11,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   RH: "RH",
   PRATICIEN: "Praticien",
-  ASSISTANT: "Assistant(e)",
+  ASSISTANT: "Employé",
   COMPTABLE: "Comptable",
 };
 
@@ -26,12 +26,8 @@ export default async function EquipePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-ardoise-900">Équipe</h1>
-        <div className="flex gap-3 text-sm">
-          <Link href="/equipe/assistants" className="text-faraday-600 hover:underline">Vue assistantes</Link>
-          <Link href="/equipe/praticiens" className="text-faraday-600 hover:underline">Vue praticiens</Link>
-          <Link href="/equipe/heures" className="text-faraday-600 hover:underline">Suivi des heures</Link>
-        </div>
+        <h1 className="text-2xl font-semibold text-ardoise-900">Employés</h1>
+        <Link href="/equipe/heures" className="text-sm text-faraday-700 hover:underline">Suivi des heures →</Link>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -113,7 +109,7 @@ export default async function EquipePage() {
 
         {isAdmin ? (
           <div className="card">
-            <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Ajouter un utilisateur</h2>
+            <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Ajouter un employé</h2>
             <p className="mb-3 text-xs text-ardoise-500">
               Définis un mot de passe directement pour une connexion immédiate, ou laisse le champ vide pour générer
               un lien d&apos;activation à transmettre.
