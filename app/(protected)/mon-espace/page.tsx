@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getClockStatus, getTodayClockEntries } from "@/lib/actions/clock";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
 import { computeDayMinutes } from "@/lib/hours-engine";
+import HoursGauge from "@/components/HoursGauge";
 import MonthlyResponse from "./MonthlyResponse";
 
 const STATUS: Record<string, { label: string; dot: string; tone: string }> = {
@@ -73,11 +74,13 @@ export default async function MonEspacePage() {
   let overtime = 0;
   let deficit = 0;
   let monthWorked = 0;
+  let monthTarget = 0;
   try {
     const recap = await computeMonthlyRecap(session.id, now.getMonth() + 1, now.getFullYear());
     overtime = recap.overtimeHours;
     deficit = recap.deficitHours;
     monthWorked = recap.totalWorkedHours;
+    monthTarget = recap.totalPlannedHours;
   } catch {
     /* pas encore de données ce mois */
   }
@@ -113,23 +116,15 @@ export default async function MonEspacePage() {
         </Link>
       </div>
 
-      {/* Chiffres clés */}
-      <div className="grid grid-cols-3 gap-3">
-        <Tile label="Aujourd'hui" value={formatHM(todayMin)} />
-        <Tile label="Cette semaine" value={formatHM(weekMin)} />
-        <Tile label="Ce mois" value={`${monthWorked.toFixed(0)}h`} />
-      </div>
-
-      {(overtime > 0.1 || deficit > 0.1) && (
-        <div className="flex flex-wrap gap-2 text-sm">
-          {overtime > 0.1 && (
-            <span className="badge bg-faraday-50 text-faraday-700">Heures sup. ce mois : +{overtime.toFixed(1)} h</span>
-          )}
-          {deficit > 0.1 && (
-            <span className="badge bg-amber-50 text-amber-700">Heures manquantes : −{deficit.toFixed(1)} h</span>
-          )}
+      {/* Mes heures ce mois — jauge visuelle */}
+      <div className="card flex flex-col items-center">
+        <h2 className="mb-2 self-start text-sm font-medium text-ardoise-900">Mes heures ce mois</h2>
+        <HoursGauge worked={monthWorked} target={monthTarget} overtime={overtime} missing={deficit} />
+        <div className="mt-4 grid w-full grid-cols-2 gap-3">
+          <Tile label="Aujourd'hui" value={formatHM(todayMin)} />
+          <Tile label="Cette semaine" value={formatHM(weekMin)} />
         </div>
-      )}
+      </div>
 
       {/* Actions secondaires */}
       <div className="grid grid-cols-2 gap-3">

@@ -13,6 +13,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/equipe", label: "Équipe", roles: ["ADMIN", "RH"] },
   { href: "/equipe/pointage", label: "Pointage QR", roles: ["ADMIN", "RH"] },
   { href: "/absences", label: "Absences", roles: ["ADMIN", "RH", "ASSISTANT", "PRATICIEN"] },
+  { href: "/messages", label: "Messagerie", roles: ["ADMIN", "RH", "PRATICIEN", "ASSISTANT", "COMPTABLE"] },
   { href: "/validations", label: "Validations", roles: ["ADMIN", "RH", "ASSISTANT", "COMPTABLE"] },
   { href: "/rapports", label: "Rapports", roles: ["ADMIN", "RH", "COMPTABLE"] },
   { href: "/parametres", label: "Paramètres", roles: ["ADMIN", "RH"] },
