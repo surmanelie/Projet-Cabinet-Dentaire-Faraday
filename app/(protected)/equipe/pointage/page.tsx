@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAllTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
 import QrCodes from "./QrCodes";
@@ -84,9 +85,9 @@ export default async function AdminPointagePage() {
                       >
                         {a.firstName[0]}{a.lastName[0]}
                       </div>
-                      <span className="font-medium text-ardoise-900">
+                      <Link href={`/planning?user=${a.id}`} className="font-medium text-ardoise-900 hover:text-faraday-700 hover:underline">
                         {a.firstName} {a.lastName}
-                      </span>
+                      </Link>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`h-2 w-2 rounded-full ${s.dot}`} />

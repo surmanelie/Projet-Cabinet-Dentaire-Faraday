@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import AssignmentForm from "../AssignmentForm";
@@ -42,9 +43,9 @@ export default async function AssistantsPage() {
           <div key={a.id} className="card">
             <div className="flex items-center gap-2">
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: a.color }} />
-              <h3 className="font-semibold text-ardoise-900">
+              <Link href={`/planning?user=${a.id}`} className="font-semibold text-ardoise-900 hover:text-faraday-700 hover:underline">
                 {a.firstName} {a.lastName}
-              </h3>
+              </Link>
               {!a.active && <span className="badge bg-ardoise-100 text-ardoise-500">Inactif</span>}
             </div>
             <p className="mt-1 text-xs text-ardoise-500">{a.email}</p>

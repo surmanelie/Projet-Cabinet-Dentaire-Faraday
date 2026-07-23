@@ -93,7 +93,9 @@ export default async function HeuresEquipePage({
               <tr key={user.id} className="border-t border-ardoise-100">
                 <td className="py-2">
                   <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: user.color }} />
-                  {user.firstName} {user.lastName}
+                  <Link href={`/planning?user=${user.id}`} className="font-medium text-faraday-700 hover:underline">
+                    {user.firstName} {user.lastName}
+                  </Link>
                 </td>
                 {error || !summary ? (
                   <td colSpan={5} className="py-2 text-ardoise-400">

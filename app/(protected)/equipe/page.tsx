@@ -52,7 +52,13 @@ export default async function EquipePage() {
                 <tr key={u.id} className="border-t border-ardoise-100">
                   <td className="py-2">
                     <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: u.color }} />
-                    {u.firstName} {u.lastName}
+                    {u.role === "ASSISTANT" || u.role === "PRATICIEN" ? (
+                      <Link href={`/planning?user=${u.id}`} className="font-medium text-faraday-700 hover:underline">
+                        {u.firstName} {u.lastName}
+                      </Link>
+                    ) : (
+                      <span>{u.firstName} {u.lastName}</span>
+                    )}
                   </td>
                   <td className="py-2 text-ardoise-500">{u.email}</td>
                   <td className="py-2">{ROLE_LABELS[u.role]}</td>
