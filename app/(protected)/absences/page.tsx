@@ -48,51 +48,55 @@ export default async function AbsencesPage() {
       : Promise.resolve([]),
   ]);
 
-  return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <div className="space-y-4">
-        <h1 className="text-xl font-semibold text-ardoise-900">Absences & congés</h1>
+  // L'administrateur / RH gère les congés (valide) : il ne fait pas de demande.
+  // L'employé fait ses demandes et suit leur statut.
+  if (canReview) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4">
+        <h1 className="text-2xl font-semibold text-ardoise-900">Congés à valider</h1>
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Nouvelle demande</h2>
-          <AbsenceForm />
-        </div>
-
-        <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Mes demandes</h2>
-          <ul className="space-y-2 text-sm">
-            {mine.map((a) => (
-              <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-2">
-                <span>
-                  {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
-                </span>
-                <span className={`badge ${STATUS_STYLES[a.status]}`}>{STATUS_LABELS[a.status] ?? a.status}</span>
-              </li>
-            ))}
-            {mine.length === 0 && <p className="text-ardoise-400">Aucune demande pour le moment.</p>}
-          </ul>
-        </div>
-      </div>
-
-      {canReview && (
-        <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Demandes en attente de validation</h2>
           <ul className="space-y-3 text-sm">
             {pending.map((a) => (
-              <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-3">
+              <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-3 last:border-0">
                 <div>
                   <p className="font-medium text-ardoise-900">{a.user.firstName} {a.user.lastName}</p>
                   <p className="text-ardoise-500">
                     {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
                   </p>
-                  {a.comment && <p className="text-xs text-ardoise-400">"{a.comment}"</p>}
+                  {a.comment && <p className="text-xs text-ardoise-400">« {a.comment} »</p>}
                 </div>
                 <ReviewButtons absenceId={a.id} />
               </li>
             ))}
-            {pending.length === 0 && <p className="text-ardoise-400">Aucune demande en attente.</p>}
+            {pending.length === 0 && <p className="py-6 text-center text-ardoise-400">Aucune demande en attente.</p>}
           </ul>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-4">
+      <h1 className="text-2xl font-semibold text-ardoise-900">Mes congés</h1>
+      <div className="card">
+        <h2 className="mb-3 text-sm font-medium text-ardoise-900">Demander un congé</h2>
+        <AbsenceForm />
+      </div>
+
+      <div className="card">
+        <h2 className="mb-3 text-sm font-medium text-ardoise-900">Mes demandes</h2>
+        <ul className="space-y-2 text-sm">
+          {mine.map((a) => (
+            <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-2 last:border-0">
+              <span>
+                {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
+              </span>
+              <span className={`badge ${STATUS_STYLES[a.status]}`}>{STATUS_LABELS[a.status] ?? a.status}</span>
+            </li>
+          ))}
+          {mine.length === 0 && <p className="text-ardoise-400">Aucune demande pour le moment.</p>}
+        </ul>
+      </div>
     </div>
   );
 }
