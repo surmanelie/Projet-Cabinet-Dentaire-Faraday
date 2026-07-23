@@ -22,8 +22,10 @@ export default async function HeuresEquipePage({
   const month = Number(params.month) || now.getMonth() + 1;
   const year = Number(params.year) || now.getFullYear();
 
+  // Seuls les employés pointent : l'administrateur et les rôles de gestion
+  // (RH, comptable) n'ont pas d'horaires ni de suivi d'heures.
   const users = await prisma.user.findMany({
-    where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN", "RH", "COMPTABLE", "ADMIN"] } },
+    where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] } },
     orderBy: [{ lastName: "asc" }],
   });
 

@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
 import { getAgendaData, dateKey } from "@/lib/agenda";
+import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
 import MonthAgenda from "@/components/MonthAgenda";
+import HoursGauge from "@/components/HoursGauge";
 import AgendaUserPicker from "./AgendaUserPicker";
 import ScheduleTemplateForm from "./ScheduleTemplateForm";
 
@@ -58,6 +60,21 @@ export default async function PlanningPage({
     ? await getAgendaData(selectedId, year, month)
     : { templatesByDow: {}, entriesByDate: {} };
 
+  let hours = { worked: 0, target: 0, overtime: 0, missing: 0 };
+  if (selectedId) {
+    try {
+      const recap = await computeMonthlyRecap(selectedId, month, year);
+      hours = {
+        worked: recap.totalWorkedHours,
+        target: recap.totalPlannedHours,
+        overtime: recap.overtimeHours,
+        missing: recap.deficitHours,
+      };
+    } catch {
+      /* pas de données */
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -68,9 +85,18 @@ export default async function PlanningPage({
       </div>
 
       {selected && (
-        <p className="text-sm text-ardoise-500">
-          Agenda de <span className="font-medium text-ardoise-700">{selected.firstName} {selected.lastName}</span>
-        </p>
+        <div className="card flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-lg font-medium text-ardoise-900">{selected.firstName} {selected.lastName}</p>
+            <p className="text-sm text-ardoise-500">Heures du mois</p>
+            <div className="mt-2 flex gap-2 text-sm">
+              <Link href={`/equipe/heures`} className="text-faraday-700 hover:underline">Suivi détaillé</Link>
+              <span className="text-ardoise-300">·</span>
+              <Link href="/equipe" className="text-faraday-700 hover:underline">Fiche</Link>
+            </div>
+          </div>
+          <HoursGauge worked={hours.worked} target={hours.target} overtime={hours.overtime} missing={hours.missing} size={140} />
+        </div>
       )}
 
       <MonthAgenda
