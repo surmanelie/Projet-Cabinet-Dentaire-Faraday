@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { logoutAction } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminOrRh } from "@/lib/permissions";
 import NotificationBell from "./NotificationBell";
 import MobileNav from "./MobileNav";
 import SearchBar from "./SearchBar";
+import Logo from "./Logo";
 import type { SessionUser } from "@/types";
 
 type Notif = { id: string; title: string; message: string; link: string | null; createdAt: Date };
@@ -28,7 +30,10 @@ export default async function TopBar({ user, notifications }: { user: SessionUse
   return (
     <header className="flex items-center gap-3 border-b border-ardoise-100 bg-white px-4 py-3 md:px-6">
       <MobileNav role={user.role} />
-      {people.length > 0 && <SearchBar people={people} />}
+      <Link href="/" className="hidden sm:block">
+        <Logo showName />
+      </Link>
+      <div className="ml-1">{people.length > 0 && <SearchBar people={people} />}</div>
 
       <div className="ml-auto flex items-center gap-3">
         <NotificationBell notifications={notifications} />

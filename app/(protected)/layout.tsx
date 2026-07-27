@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import { getUnreadNotifications } from "@/lib/actions/notifications";
 
@@ -11,12 +10,11 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   const notifications = await getUnreadNotifications();
 
   return (
-    <div className="flex min-h-screen bg-ardoise-50">
-      <Sidebar role={session.role} />
-      <div className="flex flex-1 flex-col">
-        <TopBar user={session} notifications={notifications} />
-        <main className="flex-1 p-4 md:p-6">{children}</main>
-      </div>
+    <div className="min-h-screen bg-ardoise-50">
+      <TopBar user={session} notifications={notifications} />
+      <main className="p-4 md:p-6">
+        <div className="mx-auto max-w-6xl">{children}</div>
+      </main>
     </div>
   );
 }
