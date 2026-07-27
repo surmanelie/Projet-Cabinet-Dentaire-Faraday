@@ -8,7 +8,24 @@ const secret = new TextEncoder().encode(
   process.env.SESSION_SECRET ?? "dev-secret-non-securise-a-changer"
 );
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login", "/activer-compte", "/pointer"];
+// Pages publiques (vitrine + auth + borne). La racine "/" est traitée à part
+// (sinon "startsWith('/')" rendrait tout public).
+const PUBLIC_PATHS = [
+  "/login",
+  "/api/auth/login",
+  "/api/stripe",
+  "/activer-compte",
+  "/pointer",
+  "/fonctionnement",
+  "/offres",
+  "/qui-sommes-nous",
+  "/contact",
+  "/inscription",
+  "/mentions-legales",
+  "/confidentialite",
+  "/conditions-generales",
+  "/robots.txt",
+];
 
 /**
  * Protection des routes côté serveur : aucune page ne doit être accessible
@@ -20,6 +37,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (
+    pathname === "/" ||
     PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
@@ -31,17 +49,13 @@ export async function middleware(req: NextRequest) {
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token) {
     const loginUrl = new URL("/login", req.url);
-    if (pathname !== "/") loginUrl.searchParams.set("redirect", pathname);
+    loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   try {
     const { payload } = await jwtVerify(token, secret);
     const user = payload.user as SessionUser;
-
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL(defaultRouteForRole(user.role), req.url));
-    }
 
     if (!canAccessRoute(pathname, user.role)) {
       return NextResponse.redirect(new URL(defaultRouteForRole(user.role), req.url));
