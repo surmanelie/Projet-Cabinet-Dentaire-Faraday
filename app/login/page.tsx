@@ -21,6 +21,13 @@ export default async function LoginPage({
         <div className="card">
           <LoginForm redirectTo={redirect} />
         </div>
+        <p className="mt-4 text-center text-sm text-ardoise-500">
+          Pas encore de compte&nbsp;?{" "}
+          <a href="/offres" className="font-medium text-faraday-700 hover:underline">Voir nos offres</a>
+        </p>
+        <p className="mt-2 text-center text-xs text-ardoise-400">
+          <a href="/" className="hover:underline">← Retour au site</a>
+        </p>
       </div>
     </main>
   );
