@@ -14,11 +14,11 @@ export default function MobileNav({ role }: { role: Role }) {
   const items = NAV_ITEMS.filter((i) => i.roles.includes(role));
 
   return (
-    <div className="md:hidden">
+    <div>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Menu"
-        className="flex items-center gap-2 rounded-lg border border-ardoise-200 px-3 py-1.5 text-sm font-medium text-ardoise-700"
+        className="flex items-center gap-2 rounded-xl border border-ardoise-200 bg-white px-3 py-2 text-sm font-medium text-ardoise-700 shadow-sm transition hover:bg-ardoise-50"
       >
         <span className="flex flex-col gap-[3px]">
           <span className="block h-0.5 w-4 bg-ardoise-700" />

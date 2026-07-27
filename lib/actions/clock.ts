@@ -412,6 +412,55 @@ export async function recordClockByPinAction(
   };
 }
 
+// Actions autorisées selon l'état courant — un seul QR, la bonne option.
+const ALLOWED_BY_STATUS: Record<ClockStatus, ClockAction[]> = {
+  ABSENT: ["DEBUT_JOURNEE"],
+  PRESENT: ["DEBUT_PAUSE", "FIN_JOURNEE"],
+  EN_PAUSE: ["FIN_PAUSE"],
+  JOURNEE_TERMINEE: [],
+};
+
+export type PinStatusResult = {
+  error?: string;
+  userName?: string;
+  status?: ClockStatus;
+  allowed?: ClockAction[];
+};
+
+/**
+ * Étape 1 du QR unique : à partir du code personnel, identifie l'employé et
+ * renvoie son statut + les seules actions valides à cet instant.
+ */
+export async function getPinStatus(_prev: PinStatusResult, formData: FormData): Promise<PinStatusResult> {
+  const pin = String(formData.get("pin") ?? "").trim();
+  if (!/^\d{4}$/.test(pin)) return { error: "Entrez votre code personnel à 4 chiffres." };
+
+  const ip = await getClientIp();
+  if (await isPinBlocked(ip)) return { error: "Trop de tentatives. Patientez quelques minutes." };
+
+  const candidates = await prisma.user.findMany({
+    where: { role: "ASSISTANT", active: true, clockPinHash: { not: null } },
+  });
+  let matched: (typeof candidates)[number] | null = null;
+  for (const c of candidates) {
+    if (c.clockPinHash && (await verifyPassword(pin, c.clockPinHash))) {
+      matched = c;
+      break;
+    }
+  }
+  if (!matched) {
+    await writeAuditLog({ actorId: null, action: "CLOCK_PIN_FAILED", entityType: "ClockEntry", ipAddress: ip });
+    return { error: "Code personnel incorrect. Réessayez ou contactez l'administrateur." };
+  }
+
+  const status = await getClockStatus(matched.id);
+  return {
+    userName: `${matched.firstName} ${matched.lastName}`,
+    status,
+    allowed: ALLOWED_BY_STATUS[status],
+  };
+}
+
 export async function recordClockFromFormAction(
   _prev: ClockResult,
   formData: FormData
