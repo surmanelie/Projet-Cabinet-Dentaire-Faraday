@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FaradayBoard — Cabinet Faraday",
-  description: "Gestion interne des horaires et des équipes du Cabinet Faraday.",
+  title: "Surmaly — Gestion du temps",
+  description: "Surmaly : pointage, horaires et suivi des heures pour votre cabinet.",
   manifest: "/manifest.json",
 };
 

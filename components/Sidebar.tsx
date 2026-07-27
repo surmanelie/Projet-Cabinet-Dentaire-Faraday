@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { NAV_ITEMS } from "@/lib/nav-items";
+import Logo from "@/components/Logo";
 
 export default function Sidebar({ role }: { role: Role }) {
   const pathname = usePathname();
@@ -11,14 +12,8 @@ export default function Sidebar({ role }: { role: Role }) {
 
   return (
     <nav className="hidden w-60 flex-col border-r border-ardoise-100 bg-white p-4 md:flex">
-      <div className="mb-6 flex items-center gap-2 px-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-faraday-600 text-sm font-semibold text-white">
-          CF
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-ardoise-900">FaradayBoard</p>
-          <p className="text-xs text-ardoise-400">Cabinet Faraday</p>
-        </div>
+      <div className="mb-6 px-2">
+        <Logo subtitle="Cabinet Faraday" />
       </div>
       <ul className="flex flex-1 flex-col gap-1">
         {items.map((item) => {
