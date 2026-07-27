@@ -1,11 +1,11 @@
 {
-  "name": "FaradayBoard — Cabinet Faraday",
-  "short_name": "FaradayBoard",
-  "description": "Gestion interne des horaires, absences et validations du Cabinet Faraday.",
+  "name": "Surmaly — Gestion du temps",
+  "short_name": "Surmaly",
+  "description": "Pointage, horaires et suivi des heures pour votre cabinet.",
   "start_url": "/login",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#0f6157",
+  "background_color": "#f6f4ef",
+  "theme_color": "#2f5041",
   "lang": "fr",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
