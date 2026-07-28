@@ -77,6 +77,11 @@ export async function createUserAction(
   if (!firstName || !lastName || !email || !role) {
     return { error: "Merci de renseigner prénom, nom, email et rôle." };
   }
+  // Le rôle propriétaire de la plateforme ne peut jamais être attribué depuis
+  // l'application cliente (uniquement via le script serveur sécurisé).
+  if (role === "SUPER_ADMIN") {
+    return { error: "Rôle non autorisé." };
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return { error: "Un utilisateur avec cet email existe déjà." };
