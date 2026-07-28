@@ -13,6 +13,7 @@ datasource db {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   RH
   PRATICIEN
@@ -147,8 +148,14 @@ model Company {
   country        String?
   vat            String?
   employeesCount Int?
-  // Statut : PENDING (paiement en attente), ACTIVE, PAST_DUE, CANCELED, EXPIRED
+  // Statut : PENDING (paiement en attente), ACTIVE, PAST_DUE, CANCELED, EXPIRED, SUSPENDED
   status         String  @default("PENDING")
+  // Type d'accès : PAID (abonnement Stripe) ou FREE (passe offert, sans carte)
+  accessType     String  @default("PAID")
+  freeUntil      DateTime? // pour un passe FREE temporaire ; null = permanent
+  suspendedAt    DateTime?
+  internalNotes  String?   // notes administratives internes (back-office)
+  lastActivityAt DateTime?
   offerId        String?
 
   // Données d'inscription conservées jusqu'à l'activation par le paiement.
