@@ -93,6 +93,8 @@ model User {
   phone        String?
   color        String   @default("#3f7e75")
   clockPinHash String?  // code personnel de pointage (4 chiffres), stocké hashé
+  companyId    String?  // entreprise (tenant) — null = données historiques
+  company      Company? @relation(fields: [companyId], references: [id])
   mustChangePassword Boolean @default(false)
   inviteToken       String?   @unique
   inviteTokenExpiresAt DateTime?
@@ -130,6 +132,55 @@ model User {
   receivedMessages Message[] @relation("MessageRecipient")
 
   @@index([role])
+}
+
+// ─── SaaS multi-entreprises ─────────────────────────────────────────────────
+
+model Company {
+  id             String  @id @default(cuid())
+  name           String
+  legalName      String?
+  phone          String?
+  address        String?
+  city           String?
+  zip            String?
+  country        String?
+  vat            String?
+  employeesCount Int?
+  // Statut : PENDING (paiement en attente), ACTIVE, PAST_DUE, CANCELED, EXPIRED
+  status         String  @default("PENDING")
+  offerId        String?
+
+  // Données d'inscription conservées jusqu'à l'activation par le paiement.
+  pendingAdminEmail        String?
+  pendingAdminFirstName    String?
+  pendingAdminLastName     String?
+  pendingAdminPasswordHash String?
+
+  stripeCustomerId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users        User[]
+  subscription Subscription?
+
+  @@index([status])
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  companyId            String    @unique
+  company              Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId String    @unique
+  stripePriceId        String
+  status               String // active, trialing, past_due, canceled, unpaid, incomplete
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+  canceledAt           DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 model Message {

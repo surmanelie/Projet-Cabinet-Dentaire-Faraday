@@ -21,6 +21,7 @@ const PUBLIC_PATHS = [
   "/qui-sommes-nous",
   "/contact",
   "/inscription",
+  "/paiement",
   "/mentions-legales",
   "/confidentialite",
   "/conditions-generales",
