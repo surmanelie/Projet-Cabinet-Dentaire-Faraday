@@ -12,7 +12,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "make:owner": "tsx scripts/make-owner.ts"
+    "make:owner": "tsx scripts/make-owner.ts",
+    "tenant:report": "tsx scripts/tenant-report.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.16.0",

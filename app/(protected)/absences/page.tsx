@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminOrRh } from "@/lib/permissions";
+import { getSessionCompanyId } from "@/lib/tenant";
 import AbsenceForm from "./AbsenceForm";
 import ReviewButtons from "./ReviewButtons";
 
@@ -32,6 +33,7 @@ export default async function AbsencesPage() {
   const session = await getSession();
   if (!session) return null;
   const canReview = isAdminOrRh(session.role);
+  const companyId = canReview ? (await getSessionCompanyId()) ?? null : null;
 
   const [mine, pending] = await Promise.all([
     prisma.absence.findMany({
@@ -41,7 +43,7 @@ export default async function AbsencesPage() {
     }),
     canReview
       ? prisma.absence.findMany({
-          where: { status: "DEMANDE" },
+          where: { status: "DEMANDE", user: { companyId } },
           include: { user: true },
           orderBy: { startDate: "asc" },
         })

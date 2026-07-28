@@ -9,8 +9,11 @@ export type MessageResult = { error?: string; success?: boolean };
 
 /** Liste des personnes avec qui échanger (tous les comptes actifs sauf soi). */
 export async function getContacts(selfId: string) {
+  // Isolation : on ne peut écrire qu'aux membres de sa propre entreprise
+  // (exclut les autres entreprises et le super-admin plateforme).
+  const me = await prisma.user.findUnique({ where: { id: selfId }, select: { companyId: true } });
   const users = await prisma.user.findMany({
-    where: { active: true, id: { not: selfId } },
+    where: { active: true, id: { not: selfId }, companyId: me?.companyId ?? null, role: { not: "SUPER_ADMIN" } },
     select: { id: true, firstName: true, lastName: true, role: true, color: true },
     orderBy: [{ role: "asc" }, { lastName: "asc" }],
   });
@@ -63,8 +66,15 @@ export async function sendMessageAction(_prev: MessageResult, formData: FormData
   if (!body) return { error: "Le message est vide." };
   if (body.length > 2000) return { error: "Message trop long (2000 caractères max)." };
 
-  const recipient = await prisma.user.findUnique({ where: { id: recipientId } });
+  const [recipient, me] = await Promise.all([
+    prisma.user.findUnique({ where: { id: recipientId }, select: { active: true, companyId: true, role: true } }),
+    prisma.user.findUnique({ where: { id: session.id }, select: { companyId: true } }),
+  ]);
   if (!recipient || !recipient.active) return { error: "Destinataire introuvable." };
+  // Isolation : uniquement au sein de la même entreprise, jamais le super-admin.
+  if (recipient.role === "SUPER_ADMIN" || (recipient.companyId ?? null) !== (me?.companyId ?? null)) {
+    return { error: "Destinataire non autorisé." };
+  }
 
   await prisma.message.create({ data: { senderId: session.id, recipientId, body } });
   await notifyUser(recipientId, "Nouveau message", `${session.firstName} ${session.lastName} vous a écrit.`, `/messages?to=${session.id}`);
