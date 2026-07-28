@@ -2,6 +2,7 @@ import { startOfDay, endOfDay, addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import StatCard from "@/components/StatCard";
 import Link from "next/link";
+import { getSessionCompanyId } from "@/lib/tenant";
 
 export default async function DashboardPage() {
   const today = new Date();
@@ -17,21 +18,26 @@ export default async function DashboardPage() {
     upcomingLeaves,
     unvalidatedEntries,
     pendingMonthly,
-  ] = await Promise.all([
-    prisma.user.count({ where: { role: "ASSISTANT", active: true } }),
-    prisma.user.count({ where: { role: "PRATICIEN", active: true } }),
-    prisma.workEntry.count({
-      where: { date: { gte: todayStart, lte: todayEnd }, status: { in: ["CONFIRME", "VALIDE", "PRE_REMPLI"] } },
-    }),
-    prisma.absence.count({
-      where: { status: "ACCEPTE", startDate: { lte: todayEnd }, endDate: { gte: todayStart } },
-    }),
-    prisma.absence.count({
-      where: { status: { in: ["DEMANDE", "ACCEPTE"] }, startDate: { gte: todayStart, lte: in30Days } },
-    }),
-    prisma.workEntry.count({ where: { status: { in: ["A_VALIDER", "MODIFIE"] } } }),
-    prisma.monthlyValidation.count({ where: { status: { in: ["EN_PREPARATION", "ENVOYE_AU_SALARIE", "REFUSE_SALARIE"] } } }),
-  ]);
+  ] = await (async () => {
+    const companyId = (await getSessionCompanyId()) ?? null;
+    const inCompany = { companyId };
+    const byUser = { user: { companyId } };
+    return Promise.all([
+      prisma.user.count({ where: { role: "ASSISTANT", active: true, ...inCompany } }),
+      prisma.user.count({ where: { role: "PRATICIEN", active: true, ...inCompany } }),
+      prisma.workEntry.count({
+        where: { date: { gte: todayStart, lte: todayEnd }, status: { in: ["CONFIRME", "VALIDE", "PRE_REMPLI"] }, ...byUser },
+      }),
+      prisma.absence.count({
+        where: { status: "ACCEPTE", startDate: { lte: todayEnd }, endDate: { gte: todayStart }, ...byUser },
+      }),
+      prisma.absence.count({
+        where: { status: { in: ["DEMANDE", "ACCEPTE"] }, startDate: { gte: todayStart, lte: in30Days }, ...byUser },
+      }),
+      prisma.workEntry.count({ where: { status: { in: ["A_VALIDER", "MODIFIE"] }, ...byUser } }),
+      prisma.monthlyValidation.count({ where: { status: { in: ["EN_PREPARATION", "ENVOYE_AU_SALARIE", "REFUSE_SALARIE"] }, ...byUser } }),
+    ]);
+  })();
 
   return (
     <div className="space-y-6">

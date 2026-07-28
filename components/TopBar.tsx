@@ -2,6 +2,7 @@ import Link from "next/link";
 import { logoutAction } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminOrRh } from "@/lib/permissions";
+import { getSessionCompanyId } from "@/lib/tenant";
 import NotificationBell from "./NotificationBell";
 import MobileNav from "./MobileNav";
 import SearchBar from "./SearchBar";
@@ -19,9 +20,10 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export default async function TopBar({ user, notifications }: { user: SessionUser; notifications: Notif[] }) {
+  const companyId = isAdminOrRh(user.role) ? await getSessionCompanyId() : undefined;
   const people = isAdminOrRh(user.role)
     ? await prisma.user.findMany({
-        where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] } },
+        where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] }, companyId: companyId ?? null },
         select: { id: true, firstName: true, lastName: true, color: true },
         orderBy: { lastName: "asc" },
       })

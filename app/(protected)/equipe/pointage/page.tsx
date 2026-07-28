@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAllTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
+import { getSessionCompanyId } from "@/lib/tenant";
 import QrCodes from "./QrCodes";
 import AdminClockEdit from "./AdminClockEdit";
 
@@ -19,9 +20,10 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export default async function AdminPointagePage() {
-  // Toutes les assistantes actives
+  // Assistantes actives de MON entreprise uniquement (isolation multi-tenant).
+  const companyId = await getSessionCompanyId();
   const assistants = await prisma.user.findMany({
-    where: { role: "ASSISTANT", active: true },
+    where: { role: "ASSISTANT", active: true, companyId: companyId ?? null },
     orderBy: { lastName: "asc" },
     select: { id: true, firstName: true, lastName: true, color: true },
   });
@@ -31,7 +33,7 @@ export default async function AdminPointagePage() {
     Promise.all(
       assistants.map(async (a) => ({ ...a, status: await getClockStatus(a.id) }))
     ),
-    getAllTodayClockEntries(),
+    getAllTodayClockEntries(companyId ?? null),
   ]);
 
   // Compteurs rapides

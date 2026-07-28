@@ -117,6 +117,12 @@ export async function reviewAbsenceAction(absenceId: string, decision: "ACCEPTE"
   const session = await getSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
 
+  // Isolation : le demandeur doit appartenir à la même entreprise que le valideur.
+  const target = await prisma.absence.findUnique({ where: { id: absenceId }, include: { user: { select: { companyId: true } } } });
+  if (!target) throw new Error("Demande introuvable");
+  const me = await prisma.user.findUnique({ where: { id: session.id }, select: { companyId: true } });
+  if ((target.user.companyId ?? null) !== (me?.companyId ?? null)) throw new Error("Non autorisé");
+
   const absence = await prisma.absence.update({
     where: { id: absenceId },
     data: { status: decision, reviewedById: session.id, reviewedAt: new Date() },
