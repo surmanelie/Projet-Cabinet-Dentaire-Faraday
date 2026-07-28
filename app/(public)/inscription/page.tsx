@@ -27,7 +27,7 @@ export default async function InscriptionPage({
       </div>
 
       <div className="card">
-        <InscriptionForm offerName={offer.name} price={formatEuro(offer.priceCents)} />
+        <InscriptionForm offerId={offer.id} offerName={offer.name} price={formatEuro(offer.priceCents)} />
       </div>
     </section>
   );

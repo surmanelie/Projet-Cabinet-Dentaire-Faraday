@@ -13,6 +13,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/absences", label: "Congés", roles: ["ADMIN", "RH"] },
   { href: "/rapports", label: "Rapports", roles: ["ADMIN", "RH", "COMPTABLE"] },
   { href: "/validations", label: "Validations", roles: ["ADMIN", "RH", "COMPTABLE"] },
+  { href: "/abonnement", label: "Abonnement", roles: ["ADMIN"] },
   { href: "/parametres", label: "Paramètres", roles: ["ADMIN", "RH"] },
 
   // Employé (assistant / praticien)

@@ -83,6 +83,7 @@ export const ROUTE_ACCESS: { prefix: string; roles: Role[] }[] = [
   { prefix: "/validations", roles: ["ADMIN", "RH", "ASSISTANT", "COMPTABLE"] },
   { prefix: "/rapports", roles: ["ADMIN", "RH", "COMPTABLE"] },
   { prefix: "/parametres", roles: ["ADMIN", "RH"] },
+  { prefix: "/abonnement", roles: ["ADMIN"] },
   { prefix: "/audit", roles: ["ADMIN"] },
 ];
 
