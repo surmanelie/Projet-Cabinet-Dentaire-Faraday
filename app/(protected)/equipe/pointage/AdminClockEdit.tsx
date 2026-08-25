@@ -59,8 +59,8 @@ function EditEntryForm({
 
   if (state.success) {
     return (
-      <p className="text-sm text-emerald-700">
-        ✅ Correction enregistrée.{" "}
+      <p className="text-sm text-faraday-800">
+        Correction enregistrée.{" "}
         <button className="underline" onClick={onClose}>Fermer</button>
       </p>
     );
@@ -126,8 +126,8 @@ function AddEntryForm({
 
   if (state.success) {
     return (
-      <p className="text-sm text-emerald-700">
-        ✅ Pointage ajouté.{" "}
+      <p className="text-sm text-faraday-800">
+        Pointage ajouté.{" "}
         <button className="underline" onClick={onClose}>Fermer</button>
       </p>
     );
@@ -202,9 +202,9 @@ export default function AdminClockEdit({
   return (
     <div className="card space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-ardoise-900">
+        <p className="text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">
           Corrections manuelles
-        </h2>
+        </p>
         <button
           onClick={() => { setShowAdd((v) => !v); setEditingId(null); }}
           className="btn-secondary text-xs"
@@ -214,7 +214,7 @@ export default function AdminClockEdit({
       </div>
 
       {showAdd && (
-        <div className="rounded-lg bg-ardoise-50 p-4">
+        <div className="rounded border border-ardoise-200 bg-ardoise-50/50 p-4">
           <p className="mb-3 text-xs text-ardoise-600">
             Ajout d&apos;un pointage oublié — une trace de correction est conservée dans le journal d&apos;audit.
           </p>
@@ -227,7 +227,7 @@ export default function AdminClockEdit({
       ) : (
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-ardoise-100 text-left text-xs text-ardoise-500">
+            <tr className="border-b border-ardoise-200 text-left text-[11px] uppercase tracking-wide text-ardoise-400">
               <th className="pb-2 pr-4">Assistante</th>
               <th className="pb-2 pr-4">Action</th>
               <th className="pb-2 pr-4">Heure</th>
@@ -262,7 +262,7 @@ export default function AdminClockEdit({
                   <td className="py-2 text-right">
                     <button
                       onClick={() => setEditingId(editingId === e.id ? null : e.id)}
-                      className="text-xs text-faraday-600 hover:underline"
+                      className="text-xs text-faraday-700 hover:underline"
                     >
                       Corriger
                     </button>
@@ -275,7 +275,7 @@ export default function AdminClockEdit({
       )}
 
       {editingId && (
-        <div className="rounded-lg bg-ardoise-50 p-4">
+        <div className="rounded border border-ardoise-200 bg-ardoise-50/50 p-4">
           <p className="mb-3 text-xs text-ardoise-600">
             Correction d&apos;un pointage — la valeur originale est conservée dans le journal d&apos;audit.
           </p>

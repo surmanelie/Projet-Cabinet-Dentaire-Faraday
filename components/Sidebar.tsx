@@ -11,21 +11,21 @@ export default function Sidebar({ role }: { role: Role }) {
   const items = NAV_ITEMS.filter((i) => i.roles.includes(role));
 
   return (
-    <nav className="hidden w-60 flex-col border-r border-ardoise-100 bg-white p-4 md:flex">
-      <div className="mb-6 px-2">
+    <nav className="hidden w-64 shrink-0 flex-col border-r border-ardoise-200 bg-white/80 px-5 py-8 md:flex">
+      <div className="mb-10 px-1">
         <Logo subtitle="Cabinet Faraday" />
       </div>
-      <ul className="flex flex-1 flex-col gap-1">
+      <ul className="flex flex-1 flex-col gap-0.5">
         {items.map((item) => {
           const active = pathname.startsWith(item.href);
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
+                className={`block border-l-2 py-2.5 pl-4 text-[13px] font-medium uppercase tracking-wide transition-all duration-300 ease-premium ${
                   active
-                    ? "bg-faraday-50 text-faraday-700"
-                    : "text-ardoise-600 hover:bg-ardoise-50"
+                    ? "border-faraday-700 text-ardoise-900"
+                    : "border-transparent text-ardoise-500 hover:border-ardoise-300 hover:text-ardoise-800"
                 }`}
               >
                 {item.label}

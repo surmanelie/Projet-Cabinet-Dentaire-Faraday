@@ -5,6 +5,7 @@ import { getClockStatus, getTodayClockEntries } from "@/lib/actions/clock";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
 import { computeDayMinutes } from "@/lib/hours-engine";
 import HoursGauge from "@/components/HoursGauge";
+import SectionLabel from "@/components/SectionLabel";
 import MonthlyResponse from "./MonthlyResponse";
 
 const STATUS: Record<string, { label: string; dot: string; tone: string }> = {
@@ -89,12 +90,10 @@ export default async function MonEspacePage() {
   const arrival = todayEntries.find((e) => e.action === "DEBUT_JOURNEE");
 
   return (
-    <div className="mx-auto max-w-xl space-y-5">
+    <div className="mx-auto max-w-xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-ardoise-900">Bonjour {session.firstName}</h1>
-        <p className="text-sm capitalize text-ardoise-500">
-          {now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
-        </p>
+        <SectionLabel>{now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Bonjour {session.firstName}</h1>
       </div>
 
       {/* Statut + pointage */}
@@ -108,17 +107,14 @@ export default async function MonEspacePage() {
             </span>
           )}
         </div>
-        <Link
-          href="/pointage"
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-faraday-600 py-4 text-base font-medium text-white transition hover:bg-faraday-700"
-        >
+        <Link href="/pointage" className="btn-primary mt-4 flex w-full items-center justify-center py-4 text-base">
           Pointer maintenant
         </Link>
       </div>
 
       {/* Mes heures ce mois — jauge visuelle */}
       <div className="card flex flex-col items-center">
-        <h2 className="mb-2 self-start text-sm font-medium text-ardoise-900">Mes heures ce mois</h2>
+        <p className="mb-2 self-start text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Mes heures ce mois</p>
         <HoursGauge worked={monthWorked} target={monthTarget} overtime={overtime} missing={deficit} />
         <div className="mt-4 grid w-full grid-cols-2 gap-3">
           <Tile label="Aujourd'hui" value={formatHM(todayMin)} />
@@ -135,7 +131,7 @@ export default async function MonEspacePage() {
       {/* Validation mensuelle (seulement si une réponse est attendue) */}
       {monthly && monthly.status === "ENVOYE_AU_SALARIE" && (
         <div className="card">
-          <h2 className="mb-2 text-sm font-medium text-ardoise-900">Votre récapitulatif du mois est prêt</h2>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Votre récapitulatif du mois est prêt</p>
           <p className="mb-3 text-sm text-ardoise-500">Merci de vérifier et de valider vos heures du mois.</p>
           <MonthlyResponse validationId={monthly.id} />
         </div>
@@ -146,8 +142,8 @@ export default async function MonEspacePage() {
 
 function Tile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white p-4 text-center shadow-sm ring-1 ring-ardoise-100">
-      <p className="text-xl font-semibold text-ardoise-900">{value}</p>
+    <div className="card text-center">
+      <p className="font-serif text-xl italic text-ardoise-900">{value}</p>
       <p className="mt-0.5 text-xs text-ardoise-400">{label}</p>
     </div>
   );

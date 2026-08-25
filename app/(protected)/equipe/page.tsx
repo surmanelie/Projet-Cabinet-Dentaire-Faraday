@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import SectionLabel from "@/components/SectionLabel";
 import UserForm from "./UserForm";
 import ToggleActiveButton from "./ToggleActiveButton";
 import ResendInviteButton from "./ResendInviteButton";
@@ -24,54 +25,59 @@ export default async function EquipePage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-ardoise-900">Employés</h1>
-        <Link href="/equipe/heures" className="text-sm text-faraday-700 hover:underline">Suivi des heures →</Link>
+    <div className="space-y-8">
+      <div className="flex items-end justify-between">
+        <div>
+          <SectionLabel>Équipe</SectionLabel>
+          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Employés</h1>
+        </div>
+        <Link href="/equipe/heures" className="btn-ghost">
+          Suivi des heures <span aria-hidden="true">→</span>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="card lg:col-span-2 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-ardoise-400">
-                <th className="py-2">Nom</th>
-                <th className="py-2">Email</th>
-                <th className="py-2">Rôle</th>
-                <th className="py-2">Statut</th>
-                <th className="py-2">Compte</th>
-                {isAdmin && <th className="py-2">Action</th>}
+              <tr className="border-b border-ardoise-200 text-left text-[11px] uppercase tracking-wider2 text-ardoise-400">
+                <th className="pb-3">Nom</th>
+                <th className="pb-3">Email</th>
+                <th className="pb-3">Rôle</th>
+                <th className="pb-3">Statut</th>
+                <th className="pb-3">Compte</th>
+                {isAdmin && <th className="pb-3">Action</th>}
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-t border-ardoise-100">
-                  <td className="py-2">
+                <tr key={u.id} className="border-b border-ardoise-100 last:border-0">
+                  <td className="py-3.5">
                     <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: u.color }} />
                     {u.role === "ASSISTANT" || u.role === "PRATICIEN" ? (
-                      <Link href={`/planning?user=${u.id}`} className="font-medium text-faraday-700 hover:underline">
+                      <Link href={`/planning?user=${u.id}`} className="font-medium text-ardoise-900 transition-colors hover:text-faraday-700">
                         {u.firstName} {u.lastName}
                       </Link>
                     ) : (
-                      <span>{u.firstName} {u.lastName}</span>
+                      <span className="text-ardoise-900">{u.firstName} {u.lastName}</span>
                     )}
                   </td>
-                  <td className="py-2 text-ardoise-500">{u.email}</td>
-                  <td className="py-2">{ROLE_LABELS[u.role]}</td>
-                  <td className="py-2">
+                  <td className="py-3.5 text-ardoise-500">{u.email}</td>
+                  <td className="py-3.5 text-ardoise-700">{ROLE_LABELS[u.role]}</td>
+                  <td className="py-3.5">
                     <span className={`badge ${u.active ? "bg-faraday-50 text-faraday-700" : "bg-ardoise-100 text-ardoise-500"}`}>
                       {u.active ? "Actif" : "Inactif"}
                     </span>
                   </td>
-                  <td className="py-2">
+                  <td className="py-3.5">
                     {u.inviteToken ? (
-                      <span className="badge bg-amber-50 text-amber-700">Invitation en attente</span>
+                      <span className="badge bg-amber-50 text-amber-800">Invitation en attente</span>
                     ) : (
                       <span className="badge bg-faraday-50 text-faraday-700">Activé</span>
                     )}
                   </td>
                   {isAdmin && (
-                    <td className="py-2">
+                    <td className="py-3.5">
                       <div className="flex flex-wrap items-start gap-2">
                         <EditUserModal
                           user={{
@@ -109,8 +115,8 @@ export default async function EquipePage() {
 
         {isAdmin ? (
           <div className="card">
-            <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Ajouter un employé</h2>
-            <p className="mb-3 text-xs text-ardoise-500">
+            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Ajouter un employé</p>
+            <p className="mb-4 text-xs text-ardoise-500">
               Définis un mot de passe directement pour une connexion immédiate, ou laisse le champ vide pour générer
               un lien d&apos;activation à transmettre.
             </p>
@@ -118,7 +124,7 @@ export default async function EquipePage() {
           </div>
         ) : (
           <div className="card">
-            <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Inviter un utilisateur</h2>
+            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Inviter un utilisateur</p>
             <p className="text-sm text-ardoise-500">
               Seul le compte Administrateur peut créer ou inviter de nouveaux comptes.
             </p>

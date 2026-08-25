@@ -40,10 +40,10 @@ export default function SearchBar({ people }: { people: Person[] }) {
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Rechercher un employé…"
-        className="w-full rounded-xl border border-ardoise-200 bg-white py-2 pl-9 pr-3 text-sm text-ardoise-800 shadow-sm transition placeholder:text-ardoise-400 focus:border-faraday-500 focus:outline-none focus:ring-2 focus:ring-faraday-500/20"
+        className="w-full rounded border border-ardoise-300 bg-white py-2 pl-9 pr-3 text-sm text-ardoise-800 transition-all duration-200 ease-premium placeholder:text-ardoise-400 focus:border-faraday-700 focus:outline-none focus:ring-1 focus:ring-faraday-700/30"
       />
       {open && results.length > 0 && (
-        <div className="absolute z-40 mt-1 w-full overflow-hidden rounded-xl border border-ardoise-100 bg-white shadow-lg">
+        <div className="absolute z-40 mt-1 w-full overflow-hidden rounded border border-ardoise-200 bg-white shadow-lg">
           {results.map((p) => (
             <button
               key={p.id}

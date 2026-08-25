@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { getTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
+import SectionLabel from "@/components/SectionLabel";
 
 const ACTION_LINKS = [
-  { href: "/pointage/debut",       label: "Début de journée", icon: "🌅", color: "border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800" },
-  { href: "/pointage/pause-debut", label: "Début de pause",   icon: "☕",  color: "border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800" },
-  { href: "/pointage/pause-fin",   label: "Fin de pause",     icon: "▶️",  color: "border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800" },
-  { href: "/pointage/fin",         label: "Fin de journée",   icon: "🌙",  color: "border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800" },
+  { href: "/pointage/debut",       label: "Début de journée", color: "border-ardoise-200 bg-white hover:border-faraday-700" },
+  { href: "/pointage/pause-debut", label: "Début de pause",   color: "border-ardoise-200 bg-white hover:border-faraday-700" },
+  { href: "/pointage/pause-fin",   label: "Fin de pause",     color: "border-ardoise-200 bg-white hover:border-faraday-700" },
+  { href: "/pointage/fin",         label: "Fin de journée",   color: "border-ardoise-200 bg-white hover:border-faraday-700" },
 ];
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -37,8 +38,9 @@ export default async function PointageIndexPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-ardoise-900">Pointage</h1>
-        <p className="text-sm text-ardoise-500">
+        <SectionLabel>Mon suivi</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Pointage</h1>
+        <p className="mt-2 text-sm text-ardoise-500">
           Statut actuel :{" "}
           <span className={`badge ${statusInfo.color}`}>{statusInfo.label}</span>
         </p>
@@ -46,18 +48,17 @@ export default async function PointageIndexPage() {
 
       {/* Boutons de pointage rapide (même sur PC) */}
       <div className="card">
-        <h2 className="mb-4 text-sm font-semibold text-ardoise-900">
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">
           Scanner un QR code ou pointer directement
-        </h2>
+        </p>
         <div className="grid grid-cols-2 gap-3">
           {ACTION_LINKS.map((a) => (
             <Link
               key={a.href}
               href={a.href}
-              className={`flex flex-col items-center rounded-xl border p-4 text-center transition ${a.color}`}
+              className={`flex flex-col items-center rounded border p-4 text-center transition-all duration-200 ease-premium ${a.color}`}
             >
-              <span className="text-3xl">{a.icon}</span>
-              <span className="mt-2 text-sm font-medium">{a.label}</span>
+              <span className="text-sm font-medium text-ardoise-800">{a.label}</span>
             </Link>
           ))}
         </div>
@@ -65,7 +66,7 @@ export default async function PointageIndexPage() {
 
       {/* Historique du jour */}
       <div className="card">
-        <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Mes pointages aujourd&apos;hui</h2>
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Mes pointages aujourd&apos;hui</p>
         {entries.length === 0 ? (
           <p className="text-sm text-ardoise-400">Aucun pointage enregistré aujourd&apos;hui.</p>
         ) : (

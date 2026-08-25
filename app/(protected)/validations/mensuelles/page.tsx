@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
+import SectionLabel from "@/components/SectionLabel";
 import GenerateRecapForm from "./GenerateRecapForm";
 import ValidationActions from "./ValidationActions";
 
@@ -53,13 +54,16 @@ export default async function MonthlyValidationsPage({
   );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-ardoise-900">
-        Validations mensuelles — {month}/{year}
-      </h1>
+    <div className="space-y-8">
+      <div>
+        <SectionLabel>Validations</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">
+          Validations mensuelles — {month}/{year}
+        </h1>
+      </div>
 
       <div className="card">
-        <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Générer un récapitulatif</h2>
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Générer un récapitulatif</p>
         <GenerateRecapForm users={users} month={month} year={year} />
       </div>
 
@@ -69,33 +73,33 @@ export default async function MonthlyValidationsPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-ardoise-400">
-                <th className="py-2 pr-4">Utilisateur</th>
-                <th className="py-2 pr-4">Prévu</th>
-                <th className="py-2 pr-4">Travaillé</th>
-                <th className="py-2 pr-4">Solde</th>
-                <th className="py-2 pr-4">Statut</th>
-                <th className="py-2 pr-4">Action</th>
+              <tr className="border-b border-ardoise-200 text-left text-[11px] uppercase tracking-wider2 text-ardoise-400">
+                <th className="pb-3 pr-4">Utilisateur</th>
+                <th className="pb-3 pr-4">Prévu</th>
+                <th className="pb-3 pr-4">Travaillé</th>
+                <th className="pb-3 pr-4">Solde</th>
+                <th className="pb-3 pr-4">Statut</th>
+                <th className="pb-3 pr-4">Action</th>
               </tr>
             </thead>
             <tbody>
               {recaps.map(({ validation, summary }) => (
-                <tr key={validation.id} className="border-t border-ardoise-100">
-                  <td className="py-2 pr-4">
+                <tr key={validation.id} className="border-b border-ardoise-100 last:border-0">
+                  <td className="py-3.5 pr-4">
                     {validation.user.firstName} {validation.user.lastName}
                   </td>
-                  <td className="py-2 pr-4">{summary.totalPlannedHours.toFixed(1)} h</td>
-                  <td className="py-2 pr-4">{summary.totalWorkedHours.toFixed(1)} h</td>
-                  <td className="py-2 pr-4 font-medium">
+                  <td className="py-3.5 pr-4">{summary.totalPlannedHours.toFixed(1)} h</td>
+                  <td className="py-3.5 pr-4">{summary.totalWorkedHours.toFixed(1)} h</td>
+                  <td className="py-3.5 pr-4 font-medium">
                     {summary.balanceHours >= 0 ? "+" : ""}
                     {summary.balanceHours.toFixed(1)} h
                   </td>
-                  <td className="py-2 pr-4">
+                  <td className="py-3.5 pr-4">
                     <span className={`badge ${STATUS_STYLES[validation.status]}`}>
                       {STATUS_LABELS[validation.status]}
                     </span>
                   </td>
-                  <td className="py-2 pr-4">
+                  <td className="py-3.5 pr-4">
                     <ValidationActions validationId={validation.id} status={validation.status} />
                   </td>
                 </tr>

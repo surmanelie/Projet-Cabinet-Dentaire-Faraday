@@ -6,16 +6,14 @@ import type { ClockAction } from "@prisma/client";
 
 interface Info {
   label: string;
-  icon: string;
-  color: string;
   clockAction: ClockAction;
 }
 
 const ACTION_INFO: Record<string, Info> = {
-  debut:         { label: "Début de journée", icon: "🌅", color: "bg-emerald-500 hover:bg-emerald-600",  clockAction: "DEBUT_JOURNEE" },
-  "pause-debut": { label: "Début de pause",   icon: "☕",  color: "bg-amber-500 hover:bg-amber-600",    clockAction: "DEBUT_PAUSE" },
-  "pause-fin":   { label: "Fin de pause",     icon: "▶️",  color: "bg-blue-500 hover:bg-blue-600",      clockAction: "FIN_PAUSE" },
-  fin:           { label: "Fin de journée",   icon: "🌙",  color: "bg-slate-700 hover:bg-slate-800",    clockAction: "FIN_JOURNEE" },
+  debut:         { label: "Début de journée", clockAction: "DEBUT_JOURNEE" },
+  "pause-debut": { label: "Début de pause",   clockAction: "DEBUT_PAUSE" },
+  "pause-fin":   { label: "Fin de pause",     clockAction: "FIN_PAUSE" },
+  fin:           { label: "Fin de journée",   clockAction: "FIN_JOURNEE" },
 };
 
 const initialState: ClockResult = {};
@@ -30,19 +28,23 @@ export default function ClockButton({ action }: { action: string }) {
 
   if (!info) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center text-red-700">
-        ⚠️ Action inconnue. Utilisez un QR code valide.
+      <div className="rounded border border-red-200 bg-red-50 p-6 text-center text-sm text-red-800">
+        Action inconnue. Utilisez un QR code valide.
       </div>
     );
   }
 
   if (state.success) {
     return (
-      <div className="space-y-6 text-center">
-        <div className="text-7xl">✅</div>
-        <h1 className="text-2xl font-bold text-ardoise-900">Pointage enregistré !</h1>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-left space-y-3">
-          <Row label="Action"     value={`${info.icon} ${info.label}`} />
+      <div className="space-y-7 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-faraday-700 text-faraday-700">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <h1 className="font-serif text-2xl italic text-ardoise-900">Pointage enregistré</h1>
+        <div className="space-y-2.5 rounded border border-ardoise-200 p-5 text-left">
+          <Row label="Action"     value={info.label} />
           <Row label="Assistante" value={state.userName ?? "—"} />
           <Row
             label="Heure"
@@ -70,23 +72,22 @@ export default function ClockButton({ action }: { action: string }) {
             }
           />
         </div>
-        <p className="text-sm text-ardoise-400">Vous pouvez fermer cette page.</p>
+        <p className="text-xs text-ardoise-400">Vous pouvez fermer cette page.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6 text-center">
-      <div className="text-7xl">{info.icon}</div>
-      <h1 className="text-2xl font-bold text-ardoise-900">{info.label}</h1>
+      <h1 className="font-serif text-2xl italic text-ardoise-900">{info.label}</h1>
       <p className="text-sm text-ardoise-500">
         Appuyez sur le bouton ci-dessous pour enregistrer ce pointage maintenant.
         L&apos;heure est celle du serveur.
       </p>
 
       {state.error && (
-        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          ⚠️ {state.error}
+        <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {state.error}
         </div>
       )}
 
@@ -95,7 +96,7 @@ export default function ClockButton({ action }: { action: string }) {
         <button
           type="submit"
           disabled={pending}
-          className={`w-full rounded-2xl py-5 text-lg font-semibold text-white transition ${info.color} disabled:opacity-60`}
+          className="w-full rounded bg-faraday-700 py-5 text-base font-medium tracking-wide text-creme-50 transition-all duration-300 ease-premium hover:bg-faraday-800 active:scale-[0.98] disabled:opacity-60"
         >
           {pending ? "Enregistrement…" : `Confirmer — ${info.label}`}
         </button>

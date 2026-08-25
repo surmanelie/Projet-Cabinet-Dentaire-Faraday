@@ -3,15 +3,15 @@ import { LogoMark } from "@/components/Logo";
 
 export default function PublicHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-ardoise-100 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 md:px-6">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="Surmaly">
-          <LogoMark size={34} />
-          <span className="text-lg font-semibold tracking-tight text-ardoise-900">Surmaly</span>
+    <header className="sticky top-0 z-40 border-b border-ardoise-200 bg-creme-50/85 backdrop-blur-md">
+      <div className="mx-auto flex max-w-content items-center gap-4 px-6 py-5 md:px-12">
+        <Link href="/" className="flex items-center gap-3" aria-label="Surmaly">
+          <LogoMark size={32} />
+          <span className="font-serif text-lg italic tracking-tight text-ardoise-900">Surmaly</span>
         </Link>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/login" className="btn-primary">Connexion</Link>
+          <Link href="/login" className="btn-secondary">Connexion</Link>
         </div>
       </div>
     </header>

@@ -15,10 +15,10 @@ export default async function PointagePage({
 
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg">
+      <div className="card w-full max-w-sm p-8">
         {/* En-tête */}
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-faraday-600 text-sm font-semibold text-white">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-faraday-700 text-sm font-semibold text-creme-50">
             CF
           </div>
           {session && (
@@ -34,9 +34,8 @@ export default async function PointagePage({
         {isValid ? (
           <ClockButton action={action} />
         ) : (
-          <div className="text-center space-y-3">
-            <p className="text-3xl">❌</p>
-            <p className="font-semibold text-red-700">QR code invalide</p>
+          <div className="space-y-3 text-center">
+            <p className="font-serif text-2xl italic text-ardoise-900">QR code invalide</p>
             <p className="text-sm text-ardoise-500">
               Contactez l&apos;administrateur pour obtenir un nouveau QR code.
             </p>

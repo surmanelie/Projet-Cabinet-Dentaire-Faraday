@@ -12,7 +12,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen bg-ardoise-50">
       <TopBar user={session} notifications={notifications} />
-      <main className="p-4 md:p-6">
+      <main className="px-5 py-8 md:px-10 md:py-12">
         <div className="mx-auto max-w-6xl">{children}</div>
       </main>
     </div>

@@ -52,8 +52,8 @@ export default function AbsenceForm() {
         <label className="label">Commentaire</label>
         <textarea name="comment" rows={2} className="input" />
       </div>
-      {state.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      {state.success && <p className="rounded-lg bg-faraday-50 px-3 py-2 text-sm text-faraday-700">Demande envoyée.</p>}
+      {state.error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
+      {state.success && <p className="rounded bg-faraday-50 px-3 py-2 text-sm text-faraday-700">Demande envoyée.</p>}
       <button type="submit" disabled={pending} className="btn-primary">
         {pending ? "Envoi..." : "Envoyer la demande"}
       </button>

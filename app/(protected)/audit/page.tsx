@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import SectionLabel from "@/components/SectionLabel";
 
 export default async function AuditPage({
   searchParams,
@@ -28,39 +29,42 @@ export default async function AuditPage({
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-ardoise-900">Journal d'audit</h1>
-      <p className="text-sm text-ardoise-500">
-        Toutes les actions sensibles (création/modification de comptes, corrections d'horaires, validations,
-        sauvegardes...) sont tracées ici avec l'auteur, l'horodatage et les valeurs avant/après.
-      </p>
+    <div className="space-y-8">
+      <div>
+        <SectionLabel>Audit</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Journal d&apos;audit</h1>
+        <p className="mt-2 text-sm text-ardoise-500">
+          Toutes les actions sensibles (création/modification de comptes, corrections d&apos;horaires, validations,
+          sauvegardes...) sont tracées ici avec l&apos;auteur, l&apos;horodatage et les valeurs avant/après.
+        </p>
+      </div>
 
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-ardoise-400">
-              <th className="py-2 pr-4">Date</th>
-              <th className="py-2 pr-4">Acteur</th>
-              <th className="py-2 pr-4">Action</th>
-              <th className="py-2 pr-4">Entité</th>
-              <th className="py-2 pr-4">Détail</th>
+            <tr className="border-b border-ardoise-200 text-left text-[11px] uppercase tracking-wider2 text-ardoise-400">
+              <th className="pb-3 pr-4">Date</th>
+              <th className="pb-3 pr-4">Acteur</th>
+              <th className="pb-3 pr-4">Action</th>
+              <th className="pb-3 pr-4">Entité</th>
+              <th className="pb-3 pr-4">Détail</th>
             </tr>
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.id} className="border-t border-ardoise-100 align-top">
-                <td className="py-2 pr-4 whitespace-nowrap text-ardoise-500">
+              <tr key={log.id} className="border-b border-ardoise-100 align-top last:border-0">
+                <td className="py-3.5 pr-4 whitespace-nowrap text-ardoise-500">
                   {log.createdAt.toLocaleString("fr-FR")}
                 </td>
-                <td className="py-2 pr-4 whitespace-nowrap">
+                <td className="py-3.5 pr-4 whitespace-nowrap">
                   {log.actor ? `${log.actor.firstName} ${log.actor.lastName}` : "Système"}
                 </td>
-                <td className="py-2 pr-4 whitespace-nowrap font-medium text-ardoise-800">{log.action}</td>
-                <td className="py-2 pr-4 whitespace-nowrap text-ardoise-500">
+                <td className="py-3.5 pr-4 whitespace-nowrap font-medium text-ardoise-800">{log.action}</td>
+                <td className="py-3.5 pr-4 whitespace-nowrap text-ardoise-500">
                   {log.entityType}
                   {log.entityId ? ` #${log.entityId.slice(0, 8)}` : ""}
                 </td>
-                <td className="py-2 pr-4 max-w-md">
+                <td className="py-3.5 pr-4 max-w-md">
                   {log.oldValue && (
                     <details className="text-xs text-ardoise-500">
                       <summary>Voir détail</summary>

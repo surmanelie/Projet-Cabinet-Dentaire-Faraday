@@ -42,7 +42,7 @@ export default function LoginForm({ redirectTo }: { redirectTo?: string }) {
       </label>
 
       {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>
+        <p className="rounded border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800">{state.error}</p>
       )}
 
       <button type="submit" disabled={pending} className="btn-primary w-full">

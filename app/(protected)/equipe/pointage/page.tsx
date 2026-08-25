@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAllTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
+import SectionLabel from "@/components/SectionLabel";
 import QrCodes from "./QrCodes";
 import AdminClockEdit from "./AdminClockEdit";
 
@@ -44,17 +45,18 @@ export default async function AdminPointagePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-ardoise-900">Pointage QR — Suivi en temps réel</h1>
-        <p className="text-sm text-ardoise-500">
-          Affichez ou imprimez les QR codes. Consultez le statut des assistantes.
+        <SectionLabel>Pointage</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Suivi en temps réel</h1>
+        <p className="mt-2 text-sm text-ardoise-500">
+          Affichez ou imprimez le QR de pointage. Consultez le statut des assistantes.
         </p>
       </div>
 
       {/* ── Compteurs ── */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile label="En poste"        value={counts.present}  color="text-emerald-600" />
-        <StatTile label="En pause"        value={counts.pause}    color="text-amber-600" />
-        <StatTile label="Journée terminée" value={counts.termine}  color="text-slate-500" />
+        <StatTile label="En poste"        value={counts.present}  color="text-faraday-700" />
+        <StatTile label="En pause"        value={counts.pause}    color="text-amber-700" />
+        <StatTile label="Journée terminée" value={counts.termine}  color="text-ardoise-600" />
         <StatTile label="Absente"         value={counts.absent}   color="text-ardoise-400" />
       </div>
 
@@ -63,7 +65,7 @@ export default async function AdminPointagePage() {
 
       {/* ── Statut des assistantes ── */}
       <div className="card">
-        <h2 className="mb-4 text-sm font-semibold text-ardoise-900">Statut des assistantes</h2>
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Statut des assistantes</p>
         {statusList.length === 0 ? (
           <p className="text-sm text-ardoise-400">Aucune assistante active.</p>
         ) : (
@@ -125,8 +127,8 @@ export default async function AdminPointagePage() {
 function StatTile({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="card text-center">
-      <p className={`text-3xl font-bold ${color}`}>{value}</p>
-      <p className="mt-1 text-xs text-ardoise-500">{label}</p>
+      <p className={`font-serif text-3xl font-medium ${color}`}>{value}</p>
+      <p className="mt-1.5 text-[11px] uppercase tracking-wide text-ardoise-400">{label}</p>
     </div>
   );
 }
