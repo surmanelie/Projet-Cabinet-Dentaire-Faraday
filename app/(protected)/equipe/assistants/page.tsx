@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { getSessionCompanyId } from "@/lib/tenant";
 import AssignmentForm from "../AssignmentForm";
 
 export default async function AssistantsPage() {
   const session = await getSession();
 
-  const companyId = await getSessionCompanyId();
   const assistants = await prisma.user.findMany({
-    where: { role: "ASSISTANT", companyId: companyId ?? null },
+    where: { role: "ASSISTANT" },
     include: {
       assistantProfile: true,
       assignmentsAsAssistant: {
@@ -21,7 +19,7 @@ export default async function AssistantsPage() {
   });
 
   const practitioners = await prisma.user.findMany({
-    where: { role: "PRATICIEN", active: true, companyId: companyId ?? null },
+    where: { role: "PRATICIEN", active: true },
     select: { id: true, firstName: true, lastName: true },
     orderBy: { lastName: "asc" },
   });

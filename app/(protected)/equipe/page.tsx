@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { getSessionCompanyId, companyMembersWhere } from "@/lib/tenant";
 import UserForm from "./UserForm";
 import ToggleActiveButton from "./ToggleActiveButton";
 import ResendInviteButton from "./ResendInviteButton";
@@ -19,11 +18,7 @@ const ROLE_LABELS: Record<string, string> = {
 export default async function EquipePage() {
   const session = await getSession();
   const isAdmin = session?.role === "ADMIN";
-  // Isolation multi-entreprise : uniquement les membres de MON entreprise
-  // (exclut les autres entreprises et le super-admin plateforme). Filtrage en base.
-  const companyId = await getSessionCompanyId();
   const users = await prisma.user.findMany({
-    where: companyMembersWhere(companyId ?? null),
     orderBy: [{ active: "desc" }, { lastName: "asc" }],
     include: { assistantProfile: true, practitionerProfile: true },
   });

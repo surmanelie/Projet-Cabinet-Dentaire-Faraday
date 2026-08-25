@@ -5,7 +5,6 @@ import type { PermissionKey } from "@/types";
 // Permissions par défaut accordées à chaque rôle. L'admin peut ensuite
 // affiner pour un utilisateur précis via UserPermission (table dynamique).
 const ROLE_DEFAULTS: Record<Role, Set<string>> = {
-  SUPER_ADMIN: new Set(["platform.manage"]),
   ADMIN: new Set([
     "users.manage",
     "roles.manage",
@@ -72,7 +71,6 @@ export function isAdminOrRh(role: Role) {
 // Pages et préfixes accessibles par rôle — utilisé par le middleware pour
 // bloquer tout accès non autorisé côté serveur (pas seulement côté UI).
 export const ROUTE_ACCESS: { prefix: string; roles: Role[] }[] = [
-  { prefix: "/platform-admin", roles: ["SUPER_ADMIN"] },
   { prefix: "/dashboard", roles: ["ADMIN", "RH"] },
   { prefix: "/mon-espace", roles: ["ASSISTANT"] },
   { prefix: "/mes-horaires", roles: ["ASSISTANT"] },
@@ -85,7 +83,6 @@ export const ROUTE_ACCESS: { prefix: string; roles: Role[] }[] = [
   { prefix: "/validations", roles: ["ADMIN", "RH", "ASSISTANT", "COMPTABLE"] },
   { prefix: "/rapports", roles: ["ADMIN", "RH", "COMPTABLE"] },
   { prefix: "/parametres", roles: ["ADMIN", "RH"] },
-  { prefix: "/abonnement", roles: ["ADMIN"] },
   { prefix: "/audit", roles: ["ADMIN"] },
 ];
 
@@ -97,8 +94,6 @@ export function canAccessRoute(pathname: string, role: Role): boolean {
 
 export function defaultRouteForRole(role: Role): string {
   switch (role) {
-    case "SUPER_ADMIN":
-      return "/platform-admin";
     case "ADMIN":
     case "RH":
       return "/dashboard";

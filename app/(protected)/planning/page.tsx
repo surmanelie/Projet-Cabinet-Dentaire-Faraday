@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
 import { getAgendaData, dateKey } from "@/lib/agenda";
-import { getSessionCompanyId } from "@/lib/tenant";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
 import MonthAgenda from "@/components/MonthAgenda";
 import HoursGauge from "@/components/HoursGauge";
@@ -24,9 +23,8 @@ export default async function PlanningPage({
   const month = Number(params.month) || now.getMonth() + 1;
   const year = Number(params.year) || now.getFullYear();
 
-  const myCompanyId = await getSessionCompanyId();
   const users = await prisma.user.findMany({
-    where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] }, companyId: myCompanyId ?? null },
+    where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] } },
     select: { id: true, firstName: true, lastName: true, role: true },
     orderBy: [{ role: "asc" }, { lastName: "asc" }],
   });
