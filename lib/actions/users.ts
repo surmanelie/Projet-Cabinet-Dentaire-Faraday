@@ -9,14 +9,7 @@ import { writeAuditLog } from "@/lib/audit";
 import { isAdminOrRh } from "@/lib/permissions";
 import { sendInviteEmail, sendPasswordResetEmail, getAppUrl } from "@/lib/email";
 import { validatePasswordStrength } from "@/lib/security";
-import { isSameCompanyMember } from "@/lib/tenant";
 import type { ContractType, Role } from "@prisma/client";
-
-/** companyId (tenant) de l'utilisateur connecté — déterminé côté serveur. */
-async function currentCompanyId(sessionId: string): Promise<string | null> {
-  const me = await prisma.user.findUnique({ where: { id: sessionId }, select: { companyId: true } });
-  return me?.companyId ?? null;
-}
 
 export type UserFormResult = {
   error?: string;
@@ -36,9 +29,9 @@ function randomPassword() {
  * une autre personne (comparaison sur les hash). Deux assistantes ne
  * peuvent pas partager le même code, sinon l'identification serait ambiguë.
  */
-async function pinAlreadyUsed(pin: string, companyId: string | null, excludeUserId?: string): Promise<boolean> {
+async function pinAlreadyUsed(pin: string, excludeUserId?: string): Promise<boolean> {
   const withPin = await prisma.user.findMany({
-    where: { clockPinHash: { not: null }, companyId: companyId ?? null, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
+    where: { clockPinHash: { not: null }, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
     select: { clockPinHash: true },
   });
   for (const u of withPin) {
@@ -84,27 +77,18 @@ export async function createUserAction(
   if (!firstName || !lastName || !email || !role) {
     return { error: "Merci de renseigner prénom, nom, email et rôle." };
   }
-  // Le rôle propriétaire de la plateforme ne peut jamais être attribué depuis
-  // l'application cliente (uniquement via le script serveur sécurisé).
-  if (role === "SUPER_ADMIN") {
-    return { error: "Rôle non autorisé." };
-  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return { error: "Un utilisateur avec cet email existe déjà." };
 
-  // Entreprise (tenant) du nouvel employé = celle de l'admin connecté.
-  // Déterminée côté serveur ; jamais lue depuis le formulaire.
-  const companyId = await currentCompanyId(session.id);
-
-  // Code de pointage optionnel (assistantes) — 4 chiffres, unique DANS l'entreprise.
+  // Code de pointage optionnel (assistantes) — 4 chiffres, unique.
   const clockPin = String(formData.get("clockPin") ?? "").trim();
   let clockPinHash: string | undefined;
   if (clockPin.length > 0) {
     if (!/^\d{4}$/.test(clockPin)) {
       return { error: "Le code de pointage doit contenir exactement 4 chiffres." };
     }
-    if (await pinAlreadyUsed(clockPin, companyId)) {
+    if (await pinAlreadyUsed(clockPin)) {
       return { error: "Ce code de pointage est déjà utilisé par une autre personne." };
     }
     clockPinHash = await hashPassword(clockPin);
@@ -144,7 +128,6 @@ export async function createUserAction(
         passwordHash: await hashPassword(password),
         mustChangePassword: false,
         invitedById: session.id,
-        companyId,
         ...(clockPinHash ? { clockPinHash } : {}),
         ...profileData,
       },
@@ -176,7 +159,6 @@ export async function createUserAction(
       inviteToken,
       inviteTokenExpiresAt,
       invitedById: session.id,
-      companyId,
       ...(clockPinHash ? { clockPinHash } : {}),
       ...profileData,
     },
@@ -225,12 +207,6 @@ export async function updateUserAction(
   const existing = await prisma.user.findUnique({ where: { id: userId } });
   if (!existing) return { error: "Utilisateur introuvable." };
 
-  // Isolation : la cible doit appartenir à la même entreprise que l'admin.
-  const companyId = await currentCompanyId(session.id);
-  if (existing.role === "SUPER_ADMIN" || (existing.companyId ?? null) !== companyId) {
-    return { error: "Cet utilisateur n'appartient pas à votre entreprise." };
-  }
-
   // Email unique (hors utilisateur courant).
   const emailOwner = await prisma.user.findUnique({ where: { email } });
   if (emailOwner && emailOwner.id !== userId) {
@@ -249,7 +225,7 @@ export async function updateUserAction(
     if (!/^\d{4}$/.test(clockPin)) {
       return { error: "Le code de pointage doit contenir exactement 4 chiffres." };
     }
-    if (await pinAlreadyUsed(clockPin, companyId, userId)) {
+    if (await pinAlreadyUsed(clockPin, userId)) {
       return { error: "Ce code de pointage est déjà utilisé par une autre personne." };
     }
     clockPinHash = await hashPassword(clockPin);
@@ -319,16 +295,10 @@ export async function deleteUserAction(userId: string): Promise<{ error?: string
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return { error: "Utilisateur introuvable." };
 
-  // Isolation : impossible d'agir sur un utilisateur d'une autre entreprise.
-  const companyId = await currentCompanyId(session.id);
-  if (user.role === "SUPER_ADMIN" || (user.companyId ?? null) !== companyId) {
-    return { error: "Cet utilisateur n'appartient pas à votre entreprise." };
-  }
-
   if (user.role === "ADMIN") {
-    const adminCount = await prisma.user.count({ where: { role: "ADMIN", companyId: companyId ?? null } });
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
     if (adminCount <= 1) {
-      return { error: "Impossible de supprimer le dernier administrateur de l'entreprise." };
+      return { error: "Impossible de supprimer le dernier administrateur." };
     }
   }
 
@@ -354,9 +324,6 @@ export async function toggleActiveAction(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("Utilisateur introuvable");
 
-  const companyId = await currentCompanyId(session.id);
-  if (user.role === "SUPER_ADMIN" || (user.companyId ?? null) !== companyId) throw new Error("Non autorisé");
-
   await prisma.user.update({ where: { id: userId }, data: { active: !user.active } });
   await writeAuditLog({
     actorId: session.id,
@@ -381,9 +348,6 @@ export async function resetPasswordAction(userId: string): Promise<{ inviteLink:
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("Utilisateur introuvable");
 
-  const companyId = await currentCompanyId(session.id);
-  if (user.role === "SUPER_ADMIN" || (user.companyId ?? null) !== companyId) throw new Error("Non autorisé");
-
   const placeholderHash = await hashPassword(randomPassword());
   const inviteToken = generateInviteToken();
   const inviteTokenExpiresAt = new Date(Date.now() + INVITE_TTL_MS);
@@ -404,11 +368,6 @@ export async function resetPasswordAction(userId: string): Promise<{ inviteLink:
 export async function assignAssistantAction(assistantId: string, practitionerId: string) {
   const session = await getSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
-
-  const companyId = await currentCompanyId(session.id);
-  if (!(await isSameCompanyMember(assistantId, companyId)) || !(await isSameCompanyMember(practitionerId, companyId))) {
-    throw new Error("Non autorisé");
-  }
 
   const assignment = await prisma.assistantPractitionerAssignment.create({
     data: { assistantId, practitionerId },
@@ -433,8 +392,6 @@ export async function unassignAssistantAction(assignmentId: string) {
 
   const asg = await prisma.assistantPractitionerAssignment.findUnique({ where: { id: assignmentId }, select: { assistantId: true } });
   if (!asg) throw new Error("Introuvable");
-  const companyId = await currentCompanyId(session.id);
-  if (!(await isSameCompanyMember(asg.assistantId, companyId))) throw new Error("Non autorisé");
 
   await prisma.assistantPractitionerAssignment.update({
     where: { id: assignmentId },
@@ -457,9 +414,6 @@ export type ScheduleTemplateInput = {
 export async function upsertScheduleTemplateAction(input: ScheduleTemplateInput) {
   const session = await getSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
-
-  const companyId = await currentCompanyId(session.id);
-  if (!(await isSameCompanyMember(input.userId, companyId))) throw new Error("Non autorisé");
 
   await prisma.scheduleTemplate.deleteMany({ where: { userId: input.userId, dayOfWeek: input.dayOfWeek } });
   await prisma.scheduleTemplate.create({

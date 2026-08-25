@@ -230,12 +230,12 @@ export async function getTodayClockEntries(userId: string) {
  * Retourne tous les pointages du jour pour toutes les assistantes
  * (usage admin).
  */
-export async function getAllTodayClockEntries(companyId?: string | null) {
+export async function getAllTodayClockEntries() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
   return prisma.clockEntry.findMany({
-    where: { timestamp: { gte: todayStart }, user: { companyId: companyId ?? null } },
+    where: { timestamp: { gte: todayStart } },
     orderBy: { timestamp: "asc" },
     include: {
       user: { select: { id: true, firstName: true, lastName: true, color: true } },

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
-import { getSessionCompanyId } from "@/lib/tenant";
 
 const MONTH_LABELS = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -25,9 +24,8 @@ export default async function HeuresEquipePage({
 
   // Seuls les employés pointent : l'administrateur et les rôles de gestion
   // (RH, comptable) n'ont pas d'horaires ni de suivi d'heures.
-  const companyId = await getSessionCompanyId();
   const users = await prisma.user.findMany({
-    where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] }, companyId: companyId ?? null },
+    where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] } },
     orderBy: [{ lastName: "asc" }],
   });
 

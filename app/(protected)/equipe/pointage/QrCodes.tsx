@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 
+/**
+ * QR de pointage du cabinet : pointe toujours vers /pointer, la borne unique.
+ */
 export default function QrCodes() {
   const [baseUrl, setBaseUrl] = useState<string>("");
 
@@ -23,9 +26,9 @@ export default function QrCodes() {
         </button>
       </div>
       <p className="mb-4 text-xs text-ardoise-500">
-        Un <strong>seul QR code</strong> pour tout le pointage. L&apos;employé le scanne, saisit son
-        <strong> code personnel à 4 chiffres</strong>, et l&apos;application ne propose que la bonne action
-        (commencer la journée, une pause, reprendre, ou terminer) selon son état du moment.
+        L&apos;employé scanne ce QR, saisit son <strong>code personnel à 4 chiffres</strong>, et
+        l&apos;application ne propose que la bonne action (commencer la journée, une pause, reprendre,
+        ou terminer) selon son état du moment.
       </p>
 
       <div className="flex flex-col items-center">

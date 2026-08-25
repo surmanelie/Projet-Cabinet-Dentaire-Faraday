@@ -13,18 +13,8 @@ const secret = new TextEncoder().encode(
 const PUBLIC_PATHS = [
   "/login",
   "/api/auth/login",
-  "/api/stripe",
   "/activer-compte",
   "/pointer",
-  "/fonctionnement",
-  "/offres",
-  "/qui-sommes-nous",
-  "/contact",
-  "/inscription",
-  "/paiement",
-  "/mentions-legales",
-  "/confidentialite",
-  "/conditions-generales",
   "/robots.txt",
 ];
 
