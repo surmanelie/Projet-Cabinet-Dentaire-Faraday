@@ -26,22 +26,22 @@ export default function HoursGauge({
     <div className="flex flex-col items-center">
       <div style={{ width: size, height: size }} className="relative">
         <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-          <circle cx="60" cy="60" r={r} fill="none" stroke="#e9e7df" strokeWidth="11" />
+          <circle cx="60" cy="60" r={r} fill="none" stroke="#E8E2D8" strokeWidth="8" />
           <circle
             cx="60"
             cy="60"
             r={r}
             fill="none"
-            stroke={over ? "#3c6350" : "#2f5041"}
-            strokeWidth="11"
+            stroke={over ? "#5C6F5E" : "#34423A"}
+            strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={C}
             strokeDashoffset={offset}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-semibold text-ardoise-900">{worked.toFixed(0)} h</span>
-          <span className="text-xs text-ardoise-400">sur {target.toFixed(0)} h prévues</span>
+          <span className="font-serif text-2xl italic text-ardoise-900">{worked.toFixed(0)} h</span>
+          <span className="text-[10px] uppercase tracking-wide text-ardoise-400">sur {target.toFixed(0)} h prévues</span>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export default function HoursGauge({
         {over ? (
           <span className="badge bg-faraday-50 text-faraday-700">+{overtime.toFixed(1)} h supplémentaires</span>
         ) : missing > 0.05 ? (
-          <span className="badge bg-amber-50 text-amber-700">−{missing.toFixed(1)} h manquantes</span>
+          <span className="badge bg-amber-50 text-amber-800">−{missing.toFixed(1)} h manquantes</span>
         ) : (
           <span className="badge bg-ardoise-100 text-ardoise-500">À jour</span>
         )}

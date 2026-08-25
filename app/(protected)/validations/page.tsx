@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import SectionLabel from "@/components/SectionLabel";
 import CorrectEntryForm from "./CorrectEntryForm";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -37,11 +38,14 @@ export default async function ValidationsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-ardoise-900">Validation des heures</h1>
-      <p className="text-sm text-ardoise-500">
-        Journées modifiées par les assistant(e)s ou en attente de validation RH.
-      </p>
+    <div className="space-y-8">
+      <div>
+        <SectionLabel>Validations</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Validation des heures</h1>
+        <p className="mt-2 text-sm text-ardoise-500">
+          Journées modifiées par les assistant(e)s ou en attente de validation RH.
+        </p>
+      </div>
 
       <div className="card overflow-x-auto">
         {entries.length === 0 ? (
@@ -49,34 +53,34 @@ export default async function ValidationsPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-ardoise-400">
-                <th className="py-2 pr-4">Utilisateur</th>
-                <th className="py-2 pr-4">Date</th>
-                <th className="py-2 pr-4">Prévu</th>
-                <th className="py-2 pr-4">Déclaré</th>
-                <th className="py-2 pr-4">Statut</th>
-                <th className="py-2 pr-4">Commentaire</th>
-                <th className="py-2 pr-4">Action</th>
+              <tr className="border-b border-ardoise-200 text-left text-[11px] uppercase tracking-wider2 text-ardoise-400">
+                <th className="pb-3 pr-4">Utilisateur</th>
+                <th className="pb-3 pr-4">Date</th>
+                <th className="pb-3 pr-4">Prévu</th>
+                <th className="pb-3 pr-4">Déclaré</th>
+                <th className="pb-3 pr-4">Statut</th>
+                <th className="pb-3 pr-4">Commentaire</th>
+                <th className="pb-3 pr-4">Action</th>
               </tr>
             </thead>
             <tbody>
               {entries.map((e) => (
-                <tr key={e.id} className="border-t border-ardoise-100 align-top">
-                  <td className="py-2 pr-4">
+                <tr key={e.id} className="border-b border-ardoise-100 align-top last:border-0">
+                  <td className="py-3.5 pr-4">
                     {e.user.firstName} {e.user.lastName}
                   </td>
-                  <td className="py-2 pr-4">{new Date(e.date).toLocaleDateString("fr-FR")}</td>
-                  <td className="py-2 pr-4 text-ardoise-500">
+                  <td className="py-3.5 pr-4">{new Date(e.date).toLocaleDateString("fr-FR")}</td>
+                  <td className="py-3.5 pr-4 text-ardoise-500">
                     {e.plannedStart ?? "—"}-{e.plannedEnd ?? "—"}
                   </td>
-                  <td className="py-2 pr-4 text-ardoise-700">
+                  <td className="py-3.5 pr-4 text-ardoise-700">
                     {e.actualStart ?? "—"}-{e.actualEnd ?? "—"} ({e.breakMinutes} min pause)
                   </td>
-                  <td className="py-2 pr-4">
+                  <td className="py-3.5 pr-4">
                     <span className={`badge ${STATUS_STYLES[e.status]}`}>{STATUS_LABELS[e.status]}</span>
                   </td>
-                  <td className="py-2 pr-4 max-w-xs text-ardoise-500">{e.comment || "—"}</td>
-                  <td className="py-2 pr-4">
+                  <td className="py-3.5 pr-4 max-w-xs text-ardoise-500">{e.comment || "—"}</td>
+                  <td className="py-3.5 pr-4">
                     <CorrectEntryForm entryId={e.id} plannedStart={e.plannedStart} plannedEnd={e.plannedEnd} />
                   </td>
                 </tr>

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import SectionLabel from "@/components/SectionLabel";
 
 const STATUS_STYLES: Record<string, string> = {
   DEMANDE: "bg-amber-50 text-amber-700",
@@ -50,12 +51,15 @@ export default async function EspacePraticienPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-ardoise-900">Mon espace praticien</h1>
+    <div className="space-y-8">
+      <div>
+        <SectionLabel>Praticien</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Mon espace praticien</h1>
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Mon planning (7 prochains jours)</h2>
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Mon planning (7 prochains jours)</p>
           {myEntries.length === 0 ? (
             <p className="text-sm text-ardoise-400">Aucune entrée planifiée.</p>
           ) : (
@@ -73,7 +77,7 @@ export default async function EspacePraticienPage() {
         </div>
 
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Mes assistantes</h2>
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Mes assistantes</p>
           {assignments.length === 0 ? (
             <p className="text-sm text-ardoise-400">Aucune assistante assignée.</p>
           ) : (
@@ -88,7 +92,7 @@ export default async function EspacePraticienPage() {
         </div>
 
         <div className="card lg:col-span-2">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Absences de mon équipe</h2>
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Absences de mon équipe</p>
           {teamAbsences.length === 0 ? (
             <p className="text-sm text-ardoise-400">Aucune absence en cours ou à venir.</p>
           ) : (

@@ -12,25 +12,25 @@ export default function NotificationBell({ notifications }: { notifications: Not
   return (
     <div className="relative">
       <button
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-ardoise-200 text-ardoise-600 hover:bg-ardoise-50"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-ardoise-300 text-ardoise-600 transition-colors duration-300 ease-premium hover:border-faraday-700"
         onClick={() => setOpen((v) => !v)}
         aria-label="Notifications"
       >
         🔔
         {notifications.length > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-faraday-700 text-[10px] text-white">
             {notifications.length}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-ardoise-100 bg-white p-3 shadow-lg">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-semibold text-ardoise-900">Notifications</p>
+        <div className="absolute right-0 z-20 mt-2 w-80 rounded border border-ardoise-200 bg-white p-4 shadow-lg">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ardoise-900">Notifications</p>
             {notifications.length > 0 && (
               <button
-                className="text-xs text-faraday-600 hover:underline"
+                className="text-xs text-faraday-700 hover:underline"
                 disabled={isPending}
                 onClick={() => startTransition(() => markAllNotificationsReadAction())}
               >
@@ -43,15 +43,15 @@ export default function NotificationBell({ notifications }: { notifications: Not
           ) : (
             <ul className="max-h-80 space-y-2 overflow-y-auto">
               {notifications.map((n) => (
-                <li key={n.id} className="rounded border border-ardoise-100 p-2 text-sm">
+                <li key={n.id} className="rounded border border-ardoise-200 p-2.5 text-sm">
                   <p className="font-medium text-ardoise-800">{n.title}</p>
                   <p className="text-ardoise-500">{n.message}</p>
-                  <div className="mt-1 flex items-center justify-between">
+                  <div className="mt-1.5 flex items-center justify-between">
                     <span className="text-xs text-ardoise-400">
                       {new Date(n.createdAt).toLocaleString("fr-FR")}
                     </span>
                     <button
-                      className="text-xs text-faraday-600 hover:underline"
+                      className="text-xs text-faraday-700 hover:underline"
                       onClick={() => startTransition(() => markNotificationReadAction(n.id))}
                     >
                       Marquer comme lu

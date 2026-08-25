@@ -11,8 +11,8 @@ export default function ActivateAccountForm({ token }: { token: string }) {
 
   if (state.success) {
     return (
-      <div className="space-y-3 text-sm">
-        <p className="rounded-lg bg-faraday-50 px-3 py-2 text-faraday-700">
+      <div className="space-y-4 text-sm">
+        <p className="rounded border border-faraday-200 bg-faraday-50 px-3 py-2.5 text-faraday-800">
           Compte activé ! Tu peux maintenant te connecter avec ton email et ton nouveau mot de passe.
         </p>
         <Link href="/login" className="btn-primary block text-center">
@@ -51,7 +51,7 @@ export default function ActivateAccountForm({ token }: { token: string }) {
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>
+        <p className="rounded border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800">{state.error}</p>
       )}
 
       <button type="submit" disabled={pending} className="btn-primary w-full">

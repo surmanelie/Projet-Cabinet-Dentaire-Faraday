@@ -3,8 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --background: #f6f4ef;
-  --foreground: #2f3b33;
+  --background: #f7f5f0;
+  --foreground: #232624;
+  --accent: #34423a;
+  --accent-soft: #7b8b7c;
+  --muted: #e8e2d8;
+  --radius: 6px;
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --spacing-section: clamp(96px, 12vw, 180px);
+  --spacing-section-sm: clamp(64px, 8vw, 120px);
+}
+
+* {
+  border-color: var(--muted);
 }
 
 body {
@@ -12,26 +23,62 @@ body {
   color: var(--foreground);
 }
 
+::selection {
+  background: var(--accent);
+  color: var(--background);
+}
+
+@layer base {
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif), Georgia, serif;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+  }
+}
+
 @layer components {
+  /* Micro-label capitales espacées : motif signature réutilisé partout
+     à la place d'une illustration explicite (numéro de section, statut...). */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider2 text-faraday-500;
+  }
+
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-faraday-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm ring-1 ring-inset ring-white/10 transition duration-150 hover:bg-faraday-700 hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded bg-faraday-700 px-5 py-2.5 text-sm font-medium tracking-wide text-creme-50 transition-all duration-300 ease-premium hover:bg-faraday-800 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-ardoise-200 bg-white px-4 py-2.5 text-sm font-medium text-ardoise-700 shadow-sm transition duration-150 hover:border-ardoise-300 hover:bg-ardoise-50 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded border border-ardoise-300 bg-transparent px-5 py-2.5 text-sm font-medium tracking-wide text-ardoise-800 transition-all duration-300 ease-premium hover:border-faraday-700 hover:text-faraday-800 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition duration-150 hover:bg-red-700 hover:shadow-md active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded bg-red-800 px-5 py-2.5 text-sm font-medium tracking-wide text-white transition-all duration-300 ease-premium hover:bg-red-900 active:scale-[0.98];
   }
+  .btn-ghost {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium text-ardoise-700 transition-colors duration-300 ease-premium hover:text-faraday-800;
+  }
+
   .card {
-    @apply rounded-2xl border border-ardoise-100 bg-white p-5 shadow-sm;
+    @apply rounded-md border border-ardoise-200 bg-white/70 p-6 shadow-none backdrop-blur-sm transition-colors duration-300;
   }
   .input {
-    @apply w-full rounded-xl border border-ardoise-200 bg-white px-3.5 py-2.5 text-sm text-ardoise-800 transition placeholder:text-ardoise-400 focus:border-faraday-500 focus:outline-none focus:ring-2 focus:ring-faraday-500/20;
+    @apply w-full rounded border border-ardoise-300 bg-white px-3.5 py-2.5 text-sm text-ardoise-900 transition-all duration-200 ease-premium placeholder:text-ardoise-400 focus:border-faraday-700 focus:outline-none focus:ring-1 focus:ring-faraday-700/30;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-ardoise-700;
+    @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-ardoise-500;
   }
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center rounded-full border border-ardoise-200 px-2.5 py-0.5 text-[11px] font-medium tracking-wide;
+  }
+
+  /* Lien de navigation avec soulignement animé (micro-interaction signature) */
+  .nav-underline {
+    @apply relative;
+  }
+  .nav-underline::after {
+    content: "";
+    @apply absolute -bottom-1 left-0 h-px w-0 bg-current transition-all duration-300 ease-premium;
+  }
+  .nav-underline:hover::after,
+  .nav-underline[data-active="true"]::after {
+    @apply w-full;
   }
 }

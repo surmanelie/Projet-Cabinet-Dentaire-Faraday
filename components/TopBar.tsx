@@ -28,23 +28,25 @@ export default async function TopBar({ user, notifications }: { user: SessionUse
     : [];
 
   return (
-    <header className="flex items-center gap-3 border-b border-ardoise-100 bg-white px-4 py-3 md:px-6">
+    <header className="flex items-center gap-4 border-b border-ardoise-200 bg-white/80 px-5 py-4 backdrop-blur-sm md:px-8">
       <MobileNav role={user.role} />
       <Link href="/" className="hidden sm:block">
         <Logo showName />
       </Link>
-      <div className="ml-1">{people.length > 0 && <SearchBar people={people} />}</div>
+      <div className="ml-2">{people.length > 0 && <SearchBar people={people} />}</div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-4">
         <NotificationBell notifications={notifications} />
         <div className="hidden text-right sm:block">
           <p className="text-sm font-medium text-ardoise-900">
             {user.firstName} {user.lastName}
           </p>
-          <p className="text-xs text-ardoise-400">{ROLE_LABELS[user.role] ?? user.role}</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider2 text-ardoise-400">
+            {ROLE_LABELS[user.role] ?? user.role}
+          </p>
         </div>
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-medium text-white"
           style={{ backgroundColor: user.color }}
         >
           {user.firstName[0]}

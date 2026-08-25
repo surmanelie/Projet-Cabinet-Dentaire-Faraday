@@ -18,24 +18,27 @@ export default function MobileNav({ role }: { role: Role }) {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Menu"
-        className="flex items-center gap-2 rounded-xl border border-ardoise-200 bg-white px-3 py-2 text-sm font-medium text-ardoise-700 shadow-sm transition hover:bg-ardoise-50"
+        className="flex items-center gap-2 rounded border border-ardoise-300 bg-white px-3 py-2 text-xs font-medium uppercase tracking-wide text-ardoise-700 transition-colors duration-300 ease-premium hover:border-faraday-700"
       >
         <span className="flex flex-col gap-[3px]">
-          <span className="block h-0.5 w-4 bg-ardoise-700" />
-          <span className="block h-0.5 w-4 bg-ardoise-700" />
-          <span className="block h-0.5 w-4 bg-ardoise-700" />
+          <span className="block h-px w-4 bg-ardoise-700" />
+          <span className="block h-px w-4 bg-ardoise-700" />
+          <span className="block h-px w-4 bg-ardoise-700" />
         </span>
         Menu
       </button>
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setOpen(false)} />
-          <nav className="fixed left-0 top-0 z-50 h-full w-64 bg-white p-4 shadow-xl">
-            <div className="mb-6 px-2">
+          <div
+            className="fixed inset-0 z-40 bg-ardoise-900/40 backdrop-blur-[2px]"
+            onClick={() => setOpen(false)}
+          />
+          <nav className="fixed left-0 top-0 z-50 h-full w-72 bg-white px-6 py-8 shadow-xl">
+            <div className="mb-10 px-1">
               <Logo subtitle="Cabinet Faraday" />
             </div>
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-0.5">
               {items.map((item) => {
                 const active = pathname.startsWith(item.href);
                 return (
@@ -43,8 +46,10 @@ export default function MobileNav({ role }: { role: Role }) {
                     <Link
                       href={item.href}
                       onClick={() => setOpen(false)}
-                      className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition ${
-                        active ? "bg-faraday-50 text-faraday-700" : "text-ardoise-600 hover:bg-ardoise-50"
+                      className={`block border-l-2 py-2.5 pl-4 text-[13px] font-medium uppercase tracking-wide transition-all duration-300 ease-premium ${
+                        active
+                          ? "border-faraday-700 text-ardoise-900"
+                          : "border-transparent text-ardoise-500 hover:border-ardoise-300 hover:text-ardoise-800"
                       }`}
                     >
                       {item.label}

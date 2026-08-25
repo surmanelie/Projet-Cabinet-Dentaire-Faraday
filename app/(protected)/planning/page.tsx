@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
 import { getAgendaData, dateKey } from "@/lib/agenda";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
+import SectionLabel from "@/components/SectionLabel";
 import MonthAgenda from "@/components/MonthAgenda";
 import HoursGauge from "@/components/HoursGauge";
 import AgendaUserPicker from "./AgendaUserPicker";
@@ -47,7 +48,7 @@ export default async function PlanningPage({
   if (admin && users.length === 0) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold text-ardoise-900">Planning</h1>
+        <h1 className="font-serif text-3xl italic text-ardoise-900">Planning</h1>
         <div className="card text-center">
           <p className="text-ardoise-500">Aucune assistante pour le moment.</p>
           <Link href="/equipe" className="btn-primary mt-3 inline-flex">Ajouter une assistante</Link>
@@ -76,9 +77,12 @@ export default async function PlanningPage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-ardoise-900">Planning</h1>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <SectionLabel>Agenda</SectionLabel>
+          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Planning</h1>
+        </div>
         {admin && (
           <AgendaUserPicker users={users} selectedId={selectedId ?? ""} month={month} year={year} />
         )}
@@ -87,7 +91,7 @@ export default async function PlanningPage({
       {selected && (
         <div className="card flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-lg font-medium text-ardoise-900">{selected.firstName} {selected.lastName}</p>
+            <p className="font-serif text-xl italic text-ardoise-900">{selected.firstName} {selected.lastName}</p>
             <p className="text-sm text-ardoise-500">Heures du mois</p>
             <div className="mt-2 flex gap-2 text-sm">
               <Link href={`/equipe/heures`} className="text-faraday-700 hover:underline">Suivi détaillé</Link>

@@ -43,8 +43,8 @@ export default function EditDayForm({
         <textarea name="comment" required className="input" rows={2} placeholder="Ex: arrivée retardée pour rdv médical" />
       </div>
 
-      {state.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      {state.success && <p className="rounded-lg bg-faraday-50 px-3 py-2 text-sm text-faraday-700">Modification envoyée, en attente de validation RH.</p>}
+      {state.error && <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p>}
+      {state.success && <p className="rounded border border-faraday-200 bg-faraday-50 px-3 py-2 text-sm text-faraday-800">Modification envoyée, en attente de validation RH.</p>}
 
       <button type="submit" disabled={pending} className="btn-primary">
         {pending ? "Envoi..." : "Envoyer"}

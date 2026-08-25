@@ -1,4 +1,5 @@
 import { getSession } from "@/lib/auth";
+import SectionLabel from "@/components/SectionLabel";
 
 const SECTIONS: { title: string; roles: string[]; items: { q: string; a: string }[] }[] = [
   {
@@ -99,10 +100,11 @@ export default async function AidePage() {
   const sections = SECTIONS.filter((s) => s.roles.includes(role) || s.roles.length === 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-ardoise-900">Aide & mode d&apos;emploi</h1>
-        <p className="mt-1 text-sm text-ardoise-500">
+        <SectionLabel>Assistance</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Aide &amp; mode d&apos;emploi</h1>
+        <p className="mt-2 text-sm text-ardoise-500">
           Guide adapté à ton rôle ({ROLE_LABELS[role] ?? role}) pour utiliser FaradayBoard.
         </p>
       </div>
@@ -110,7 +112,7 @@ export default async function AidePage() {
       <div className="space-y-4">
         {sections.map((section) => (
           <div key={section.title} className="card">
-            <h2 className="mb-3 text-sm font-semibold text-ardoise-900">{section.title}</h2>
+            <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">{section.title}</p>
             <div className="space-y-3">
               {section.items.map((item) => (
                 <div key={item.q}>

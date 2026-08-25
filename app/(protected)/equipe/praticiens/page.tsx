@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import SectionLabel from "@/components/SectionLabel";
 
 export default async function PraticiensPage() {
   const practitioners = await prisma.user.findMany({
@@ -14,15 +15,18 @@ export default async function PraticiensPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-ardoise-900">Praticiens</h1>
+    <div className="space-y-8">
+      <div>
+        <SectionLabel>Équipe</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Praticiens</h1>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {practitioners.map((p) => (
           <div key={p.id} className="card">
             <div className="flex items-center gap-2">
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
-              <h3 className="font-semibold text-ardoise-900">
+              <h3 className="font-serif text-lg italic text-ardoise-900">
                 {p.firstName} {p.lastName}
               </h3>
               {!p.active && <span className="badge bg-ardoise-100 text-ardoise-500">Inactif</span>}

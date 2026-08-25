@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
 
-// Palette "Sauge et crème" du Cabinet Faraday : vert sauge doux + neutres chauds.
+// Direction artistique "Maison Surmaly" : ivoire chaud, vert sauge profond,
+// anthracite. Palette volontairement restreinte, proche d'une identité
+// d'hôtellerie boutique / cabinet d'architecture plutôt que d'un site médical.
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx}",
@@ -10,46 +12,60 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Vert sauge foncé — couleur principale (boutons, accents, QR codes)
+        // Vert sauge → vert profond — couleur principale (boutons, accents)
         faraday: {
-          50: "#eef2f0",
-          100: "#d6e2db",
-          200: "#aec7bc",
-          300: "#7fa693",
-          400: "#54806c",
-          500: "#3c6350",
-          600: "#2f5041",
-          700: "#264135",
-          800: "#1d322a",
-          900: "#152521",
+          50: "#EEF1EE",
+          100: "#DEE4DC",
+          200: "#C3CEC0",
+          300: "#A2B29C",
+          400: "#7B8B7C", // sauge désaturé — accent secondaire
+          500: "#5C6F5E",
+          600: "#45543F",
+          700: "#34423A", // vert profond — accent principal
+          800: "#283329",
+          900: "#1C241D",
         },
-        // Neutres chauds (greige) — textes, bordures, fonds discrets
+        // Neutres chauds — ivoire (fonds), beige minéral (bordures), anthracite (texte)
         ardoise: {
-          50: "#f5f4ef",
-          100: "#e9e7df",
-          200: "#d7d3c8",
-          300: "#b4afa2",
-          400: "#8a877c",
-          500: "#6e7b72",
-          600: "#565f57",
-          700: "#434b45",
-          800: "#2f3b33",
-          900: "#212a24",
+          50: "#F7F5F0", // ivoire chaud — fond de page
+          100: "#EFEBE2",
+          200: "#E8E2D8", // beige minéral — bordures
+          300: "#D2CBBC",
+          400: "#A79E8C",
+          500: "#8B8172",
+          600: "#6B6357",
+          700: "#4E4941",
+          800: "#322E29",
+          900: "#232624", // anthracite — texte principal
         },
-        // Crème — fond de page
+        // Alias du fond ivoire
         creme: {
-          DEFAULT: "#f6f4ef",
-          50: "#faf9f5",
-          100: "#f6f4ef",
-          200: "#efece3",
+          DEFAULT: "#F7F5F0",
+          50: "#FBFAF7",
+          100: "#F7F5F0",
+          200: "#EFEBE2",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
       },
       borderRadius: {
-        xl: "0.875rem",
-        "2xl": "1.125rem",
+        DEFAULT: "6px",
+        sm: "4px",
+        md: "6px",
+        lg: "8px",
+        xl: "8px",
+        "2xl": "10px",
+      },
+      maxWidth: {
+        content: "1600px",
+      },
+      transitionTimingFunction: {
+        premium: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
+      letterSpacing: {
+        wider2: "0.14em",
       },
     },
   },

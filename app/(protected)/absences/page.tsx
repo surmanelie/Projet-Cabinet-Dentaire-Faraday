@@ -1,6 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminOrRh } from "@/lib/permissions";
+import SectionLabel from "@/components/SectionLabel";
 import AbsenceForm from "./AbsenceForm";
 import ReviewButtons from "./ReviewButtons";
 
@@ -52,8 +53,11 @@ export default async function AbsencesPage() {
   // L'employé fait ses demandes et suit leur statut.
   if (canReview) {
     return (
-      <div className="mx-auto max-w-2xl space-y-4">
-        <h1 className="text-2xl font-semibold text-ardoise-900">Congés à valider</h1>
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div>
+          <SectionLabel>Absences</SectionLabel>
+          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Congés à valider</h1>
+        </div>
         <div className="card">
           <ul className="space-y-3 text-sm">
             {pending.map((a) => (
@@ -76,15 +80,18 @@ export default async function AbsencesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="text-2xl font-semibold text-ardoise-900">Mes congés</h1>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div>
+        <SectionLabel>Absences</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Mes congés</h1>
+      </div>
       <div className="card">
-        <h2 className="mb-3 text-sm font-medium text-ardoise-900">Demander un congé</h2>
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Demander un congé</p>
         <AbsenceForm />
       </div>
 
       <div className="card">
-        <h2 className="mb-3 text-sm font-medium text-ardoise-900">Mes demandes</h2>
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Mes demandes</p>
         <ul className="space-y-2 text-sm">
           {mine.map((a) => (
             <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-2 last:border-0">

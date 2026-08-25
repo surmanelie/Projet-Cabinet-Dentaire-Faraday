@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import SectionLabel from "@/components/SectionLabel";
 import AssignmentForm from "../AssignmentForm";
 
 export default async function AssistantsPage() {
@@ -28,12 +29,15 @@ export default async function AssistantsPage() {
   const activeAssistants = assistants.filter((a) => a.active);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-ardoise-900">Assistantes</h1>
+    <div className="space-y-8">
+      <div>
+        <SectionLabel>Équipe</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Assistantes</h1>
+      </div>
 
       {isAdminOrRh && (
         <div className="card">
-          <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Associer une assistante à un praticien</h2>
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Associer une assistante à un praticien</p>
           <AssignmentForm assistants={activeAssistants} practitioners={practitioners} />
         </div>
       )}
@@ -43,7 +47,7 @@ export default async function AssistantsPage() {
           <div key={a.id} className="card">
             <div className="flex items-center gap-2">
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: a.color }} />
-              <Link href={`/planning?user=${a.id}`} className="font-semibold text-ardoise-900 hover:text-faraday-700 hover:underline">
+              <Link href={`/planning?user=${a.id}`} className="font-serif text-lg italic text-ardoise-900 hover:text-faraday-700 hover:underline">
                 {a.firstName} {a.lastName}
               </Link>
               {!a.active && <span className="badge bg-ardoise-100 text-ardoise-500">Inactif</span>}

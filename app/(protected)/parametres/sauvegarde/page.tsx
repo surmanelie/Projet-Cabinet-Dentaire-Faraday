@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { listBackupsAction } from "@/lib/actions/backup";
+import SectionLabel from "@/components/SectionLabel";
 import BackupActions from "./BackupActions";
 import DeleteBackupButton from "./DeleteBackupButton";
 
@@ -12,18 +13,21 @@ export default async function SauvegardePage() {
   const backups = await listBackupsAction();
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <h1 className="text-xl font-semibold text-ardoise-900">Sauvegarde &amp; restauration</h1>
-      <p className="text-sm text-ardoise-500">
-        La base de données SQLite locale peut être sauvegardée et restaurée directement depuis l'interface.
-      </p>
+    <div className="max-w-2xl space-y-8">
+      <div>
+        <SectionLabel>Paramètres</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Sauvegarde &amp; restauration</h1>
+        <p className="mt-2 text-sm text-ardoise-500">
+          La base de données SQLite locale peut être sauvegardée et restaurée directement depuis l'interface.
+        </p>
+      </div>
 
       <div className="card">
         <BackupActions />
       </div>
 
       <div className="card">
-        <h2 className="mb-3 text-sm font-semibold text-ardoise-900">Sauvegardes disponibles</h2>
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Sauvegardes disponibles</p>
         {backups.length === 0 ? (
           <p className="text-sm text-ardoise-400">Aucune sauvegarde pour le moment.</p>
         ) : (
@@ -37,7 +41,7 @@ export default async function SauvegardePage() {
                   </p>
                 </div>
                 <div className="flex gap-3">
-                  <a className="text-xs text-faraday-600 hover:underline" href={`/api/backup/${b.name}`}>
+                  <a className="text-xs text-faraday-700 hover:underline" href={`/api/backup/${b.name}`}>
                     Télécharger
                   </a>
                   <DeleteBackupButton fileName={b.name} />

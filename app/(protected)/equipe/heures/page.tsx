@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
+import SectionLabel from "@/components/SectionLabel";
 
 const MONTH_LABELS = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -46,16 +47,17 @@ export default async function HeuresEquipePage({
   const nextYear = month === 12 ? year + 1 : year;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-ardoise-900">Suivi des heures — équipe</h1>
-          <p className="mt-1 text-sm text-ardoise-500">
+          <SectionLabel>Équipe</SectionLabel>
+          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Suivi des heures</h1>
+          <p className="mt-2 text-sm text-ardoise-500">
             Heures travaillées vs. heures contractuelles, par personne, pour le mois sélectionné. Le solde indique
             les heures manquantes (négatif) ou les heures en plus / supplémentaires (positif).
           </p>
         </div>
-        <Link href="/equipe" className="text-sm text-faraday-600 hover:underline">
+        <Link href="/equipe" className="btn-ghost text-sm">
           ← Retour à l&apos;équipe
         </Link>
       </div>

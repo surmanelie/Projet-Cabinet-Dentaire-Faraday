@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { getContacts, getConversation } from "@/lib/actions/messages";
+import SectionLabel from "@/components/SectionLabel";
 import MessageForm from "./MessageForm";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -26,8 +27,11 @@ export default async function MessagesPage({
   const messages = toId ? await getConversation(session.id, toId) : [];
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4">
-      <h1 className="text-2xl font-semibold text-ardoise-900">Messagerie</h1>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div>
+        <SectionLabel>Échanges</SectionLabel>
+        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Messagerie</h1>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="card p-2 md:col-span-1">
@@ -39,7 +43,7 @@ export default async function MessagesPage({
                 <li key={c.id}>
                   <Link
                     href={`/messages?to=${c.id}`}
-                    className={`flex items-center gap-3 rounded-xl px-2.5 py-2 transition ${
+                    className={`flex items-center gap-3 rounded px-2.5 py-2 transition ${
                       c.id === toId ? "bg-faraday-50" : "hover:bg-ardoise-50"
                     }`}
                   >
@@ -71,7 +75,7 @@ export default async function MessagesPage({
           {active ? (
             <>
               <div className="mb-3 border-b border-ardoise-100 pb-3">
-                <p className="font-medium text-ardoise-900">{active.firstName} {active.lastName}</p>
+                <p className="font-serif text-lg italic text-ardoise-900">{active.firstName} {active.lastName}</p>
                 <p className="text-xs text-ardoise-400">{ROLE_LABELS[active.role] ?? active.role}</p>
               </div>
 
@@ -86,7 +90,7 @@ export default async function MessagesPage({
                     return (
                       <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                         <div
-                          className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${
+                          className={`max-w-[75%] rounded px-3.5 py-2 text-sm ${
                             mine ? "bg-faraday-600 text-white" : "bg-ardoise-100 text-ardoise-800"
                           }`}
                         >
