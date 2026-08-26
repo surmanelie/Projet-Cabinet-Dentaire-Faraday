@@ -18,14 +18,13 @@ export default function MobileNav({ role }: { role: Role }) {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Menu"
-        className="flex items-center gap-2 rounded border border-ardoise-300 bg-white px-3 py-2 text-xs font-medium uppercase tracking-wide text-ardoise-700 transition-colors duration-300 ease-premium hover:border-faraday-700"
+        className="flex items-center justify-center rounded border border-ardoise-300 bg-white p-2.5 text-ardoise-700 transition-colors duration-300 ease-premium hover:border-faraday-700"
       >
         <span className="flex flex-col gap-[3px]">
           <span className="block h-px w-4 bg-ardoise-700" />
           <span className="block h-px w-4 bg-ardoise-700" />
           <span className="block h-px w-4 bg-ardoise-700" />
         </span>
-        Menu
       </button>
 
       {open && (

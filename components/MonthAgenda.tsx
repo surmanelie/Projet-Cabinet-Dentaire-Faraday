@@ -103,7 +103,7 @@ export default function MonthAgenda({
       <div className="mt-4 flex flex-wrap gap-3 text-xs text-ardoise-500">
         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded bg-faraday-50 ring-1 ring-faraday-200" /> Horaire prévu</span>
         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded bg-amber-50 ring-1 ring-amber-200" /> Congé</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded border border-faraday-500 bg-faraday-50" /> Aujourd'hui</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded border border-faraday-500 bg-faraday-50" /> Aujourd&apos;hui</span>
       </div>
     </div>
   );

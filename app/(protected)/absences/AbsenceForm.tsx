@@ -23,7 +23,7 @@ export default function AbsenceForm() {
   return (
     <form action={formAction} className="space-y-3">
       <div>
-        <label className="label">Type d'absence</label>
+        <label className="label">Type d&apos;absence</label>
         <select name="type" required className="input">
           {TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>

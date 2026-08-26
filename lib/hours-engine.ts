@@ -75,16 +75,18 @@ export type WeeklyBreakdown = {
 
 /**
  * Calcule la répartition hebdomadaire pour un salarié temps plein.
- * - de 0 à fullTimeWeeklyThreshold : heures normales
- * - de threshold à overtimeTier1UpToHours : majoration tier1
+ * - de 0 à contractHours (heures contractuelles RÉELLES du salarié — pas le
+ *   seuil légal générique `fullTimeWeeklyThreshold`, qui ne sert que de
+ *   valeur par défaut) : heures normales
+ * - de contractHours à overtimeTier1UpToHours : majoration tier1
  * - au-delà : majoration tier2
  * Un déficit (< contrat) n'est jamais majoré.
  */
 export function computeFullTimeWeek(
   workedHours: number,
+  contractHours: number = DEFAULT_RULES.fullTimeWeeklyThreshold,
   rules: RulesConfig = DEFAULT_RULES
 ): WeeklyBreakdown {
-  const contractHours = rules.fullTimeWeeklyThreshold;
   const deltaHours = workedHours - contractHours;
 
   let overtimeTier1Hours = 0;
@@ -192,7 +194,7 @@ export function computeMonthlySummary(input: MonthlySummaryInput): MonthlySummar
   const weekly =
     input.contractType === "TEMPS_PARTIEL"
       ? computePartTimeWeek(totalWorkedHours / weeksInMonth, input.weeklyContractHours, rules)
-      : computeFullTimeWeek(totalWorkedHours / weeksInMonth, rules);
+      : computeFullTimeWeek(totalWorkedHours / weeksInMonth, input.weeklyContractHours, rules);
 
   const overtimeHoursMonthly =
     (weekly.overtimeTier1Hours + weekly.overtimeTier2Hours + weekly.complementaryTier1Hours + weekly.complementaryTier2Hours) *

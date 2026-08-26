@@ -3,7 +3,7 @@
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { getVerifiedSession } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { isAdminOrRh } from "@/lib/permissions";
@@ -58,7 +58,7 @@ export async function createUserAction(
   _prev: UserFormResult,
   formData: FormData
 ): Promise<UserFormResult> {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOnly(session.role)) {
     return { error: "Seul l'administrateur peut créer un compte." };
   }
@@ -182,7 +182,7 @@ export async function updateUserAction(
   _prev: UserFormResult,
   formData: FormData
 ): Promise<UserFormResult> {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOnly(session.role)) {
     return { error: "Seul l'administrateur peut modifier un compte." };
   }
@@ -284,7 +284,7 @@ export async function updateUserAction(
  * de supprimer le dernier administrateur (pour ne pas verrouiller l'accès).
  */
 export async function deleteUserAction(userId: string): Promise<{ error?: string; success?: boolean }> {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOnly(session.role)) {
     return { error: "Seul l'administrateur peut supprimer un compte." };
   }
@@ -318,7 +318,7 @@ export async function deleteUserAction(userId: string): Promise<{ error?: string
 }
 
 export async function toggleActiveAction(userId: string) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -342,7 +342,7 @@ export async function toggleActiveAction(userId: string) {
  * temporaire généré en clair.
  */
 export async function resetPasswordAction(userId: string): Promise<{ inviteLink: string; emailSent: boolean }> {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOnly(session.role)) throw new Error("Seul l'administrateur peut réinitialiser un mot de passe.");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -366,7 +366,7 @@ export async function resetPasswordAction(userId: string): Promise<{ inviteLink:
 }
 
 export async function assignAssistantAction(assistantId: string, practitionerId: string) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
 
   const assignment = await prisma.assistantPractitionerAssignment.create({
@@ -387,7 +387,7 @@ export async function assignAssistantAction(assistantId: string, practitionerId:
 }
 
 export async function unassignAssistantAction(assignmentId: string) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
 
   const asg = await prisma.assistantPractitionerAssignment.findUnique({ where: { id: assignmentId }, select: { assistantId: true } });
@@ -412,7 +412,7 @@ export type ScheduleTemplateInput = {
 };
 
 export async function upsertScheduleTemplateAction(input: ScheduleTemplateInput) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
 
   await prisma.scheduleTemplate.deleteMany({ where: { userId: input.userId, dayOfWeek: input.dayOfWeek } });

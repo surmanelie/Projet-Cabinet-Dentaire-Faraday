@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
 /**
  * QR de pointage du cabinet : pointe toujours vers /pointer, la borne unique.
+ * L'URL est calculée côté serveur (voir lib/email.ts#getAppUrl) et transmise
+ * en prop, pour ne pas dépendre de window côté client (fiable en SSR).
  */
-export default function QrCodes() {
-  const [baseUrl, setBaseUrl] = useState<string>("");
-
-  useEffect(() => {
-    setBaseUrl(`${window.location.protocol}//${window.location.host}`);
-  }, []);
-
-  const targetUrl = baseUrl ? `${baseUrl}/pointer` : "";
-  const qrSrc = targetUrl
-    ? `https://quickchart.io/qr?text=${encodeURIComponent(targetUrl)}&size=280&margin=2&dark=264135&light=ffffff`
-    : "";
+export default function QrCodes({ appUrl }: { appUrl: string }) {
+  const targetUrl = `${appUrl}/pointer`;
+  const qrSrc = `https://quickchart.io/qr?text=${encodeURIComponent(targetUrl)}&size=280&margin=2&dark=264135&light=ffffff`;
 
   return (
     <div className="card">
@@ -33,17 +25,9 @@ export default function QrCodes() {
 
       <div className="flex flex-col items-center">
         <div className="rounded-2xl border border-ardoise-100 p-4">
-          {qrSrc ? (
-            <img src={qrSrc} alt="QR code de pointage" width={220} height={220} className="rounded-lg" />
-          ) : (
-            <div className="flex h-[220px] w-[220px] items-center justify-center rounded-lg bg-white text-xs text-ardoise-400">
-              Chargement…
-            </div>
-          )}
+          <img src={qrSrc} alt="QR code de pointage" width={220} height={220} className="rounded-lg" />
         </div>
-        {targetUrl && (
-          <p className="mt-3 break-all text-center text-xs text-ardoise-400">{targetUrl}</p>
-        )}
+        <p className="mt-3 break-all text-center text-xs text-ardoise-400">{targetUrl}</p>
       </div>
     </div>
   );
