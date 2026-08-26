@@ -3,6 +3,16 @@
 import { useRef, useState, useTransition } from "react";
 import { createBackupAction } from "@/lib/actions/backup";
 
+function downloadJson(fileName: string, content: string) {
+  const blob = new Blob([content], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function BackupActions() {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
@@ -21,7 +31,8 @@ export default function BackupActions() {
     const body = await res.json().catch(() => ({}));
     setRestoring(false);
     if (res.ok) {
-      setMessage({ text: "Restauration effectuée. Rechargez l'application." });
+      if (body.safetyBackup) downloadJson(body.safetyBackup.fileName, body.safetyBackup.content);
+      setMessage({ text: "Restauration effectuée. La sauvegarde de sécurité de l'état précédent a été téléchargée. Rechargez l'application." });
     } else {
       setMessage({ text: body.error || "Erreur lors de la restauration.", error: true });
     }
@@ -35,8 +46,9 @@ export default function BackupActions() {
           disabled={isPending}
           onClick={() =>
             startTransition(async () => {
-              await createBackupAction();
-              setMessage({ text: "Sauvegarde créée." });
+              const { fileName, content } = await createBackupAction();
+              downloadJson(fileName, content);
+              setMessage({ text: "Sauvegarde téléchargée sur votre appareil." });
             })
           }
         >

@@ -1,18 +1,11 @@
 "use server";
 
-import fs from "fs/promises";
-import path from "path";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getVerifiedSession } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 
-const BACKUP_DIR = path.join(process.cwd(), "backups");
 const BACKUP_VERSION = 1;
-
-async function ensureBackupDir() {
-  await fs.mkdir(BACKUP_DIR, { recursive: true });
-}
 
 /**
  * Sérialise l'intégralité des données métier de la base PostgreSQL en un
@@ -82,15 +75,21 @@ async function exportAllData() {
 
 type BackupPayload = Awaited<ReturnType<typeof exportAllData>>;
 
+/**
+ * Renvoie directement le contenu JSON au navigateur (aucune écriture disque) :
+ * Vercel ne fournit pas de système de fichiers persistant pour les fonctions
+ * serverless, la sauvegarde ne peut donc pas être stockée côté serveur. Le
+ * fichier est téléchargé sur le poste de l'administrateur, comme pour la
+ * restauration qui fonctionne déjà par upload de fichier.
+ */
 export async function createBackupAction() {
   const session = await getVerifiedSession();
   if (!session || session.role !== "ADMIN") throw new Error("Non autorisé");
 
-  await ensureBackupDir();
   const payload = await exportAllData();
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const fileName = `faradayboard-backup-${stamp}.json`;
-  await fs.writeFile(path.join(BACKUP_DIR, fileName), JSON.stringify(payload, null, 2), "utf-8");
+  const content = JSON.stringify(payload, null, 2);
 
   await writeAuditLog({
     actorId: session.id,
@@ -99,32 +98,7 @@ export async function createBackupAction() {
     newValue: { fileName, users: payload.data.users.length },
   });
 
-  revalidatePath("/parametres/sauvegarde");
-  return { fileName };
-}
-
-export async function listBackupsAction() {
-  await ensureBackupDir();
-  const files = await fs.readdir(BACKUP_DIR);
-  const stats = await Promise.all(
-    files
-      .filter((f) => f.endsWith(".json") && f.startsWith("faradayboard-backup-"))
-      .map(async (f) => {
-        const stat = await fs.stat(path.join(BACKUP_DIR, f));
-        return { name: f, size: stat.size, mtime: stat.mtime };
-      })
-  );
-  return stats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-}
-
-export async function deleteBackupAction(fileName: string) {
-  const session = await getVerifiedSession();
-  if (!session || session.role !== "ADMIN") throw new Error("Non autorisé");
-  if (fileName.includes("..") || fileName.includes("/")) throw new Error("Nom de fichier invalide");
-
-  await fs.unlink(path.join(BACKUP_DIR, fileName));
-  await writeAuditLog({ actorId: session.id, action: "DELETE_BACKUP", entityType: "CabinetSettings", newValue: { fileName } });
-  revalidatePath("/parametres/sauvegarde");
+  return { fileName, content };
 }
 
 function isValidBackupPayload(value: unknown): value is BackupPayload {
@@ -139,7 +113,9 @@ function isValidBackupPayload(value: unknown): value is BackupPayload {
  * annule tout et la base reste dans son état d'origine. Une sauvegarde de
  * sécurité de l'état actuel est créée juste avant, au cas où.
  */
-export async function restoreBackupAction(raw: string): Promise<{ error?: string; success?: boolean }> {
+export async function restoreBackupAction(
+  raw: string
+): Promise<{ error?: string; success?: boolean; safetyBackup?: { fileName: string; content: string } }> {
   const session = await getVerifiedSession();
   if (!session || session.role !== "ADMIN") return { error: "Non autorisé." };
 
@@ -154,11 +130,12 @@ export async function restoreBackupAction(raw: string): Promise<{ error?: string
   }
   const backup = parsed.data;
 
-  // Filet de sécurité : on sauvegarde l'état actuel avant de l'écraser.
-  await ensureBackupDir();
+  // Filet de sécurité : on exporte l'état actuel avant de l'écraser et on le
+  // renvoie au client (aucun système de fichiers persistant sur Vercel), qui
+  // le télécharge automatiquement avant de confirmer la restauration.
   const safetyPayload = await exportAllData();
-  const safetyName = `pre-restore-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
-  await fs.writeFile(path.join(BACKUP_DIR, safetyName), JSON.stringify(safetyPayload, null, 2), "utf-8");
+  const safetyFileName = `faradayboard-pre-restore-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+  const safetyContent = JSON.stringify(safetyPayload, null, 2);
 
   try {
     await prisma.$transaction(
@@ -218,9 +195,9 @@ export async function restoreBackupAction(raw: string): Promise<{ error?: string
     actorId: session.id,
     action: "RESTORE_BACKUP",
     entityType: "CabinetSettings",
-    newValue: { users: backup.users.length, safetyBackup: safetyName },
+    newValue: { users: backup.users.length, safetyBackup: safetyFileName },
   });
 
   revalidatePath("/", "layout");
-  return { success: true };
+  return { success: true, safetyBackup: { fileName: safetyFileName, content: safetyContent } };
 }
