@@ -18,7 +18,7 @@ export default async function ReglesPage() {
         <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Règles de calcul des heures</h1>
         <p className="mt-2 text-sm text-ardoise-500">
           Ces règles pilotent entièrement le moteur de calcul (heures supplémentaires, heures complémentaires,
-          arrondis). Aucune valeur n'est figée dans le code de l'application.
+          arrondis). Aucune valeur n&apos;est figée dans le code de l&apos;application.
         </p>
       </div>
       <div className="card">

@@ -51,7 +51,7 @@ export default function PdfExportForm({
 
       {canSeeGlobal && (
         <div>
-          <label className="label">Type d'export</label>
+          <label className="label">Type d&apos;export</label>
           <select className="input" value={scope} onChange={(e) => setScope(e.target.value as "employee" | "global")}>
             <option value="employee">Récapitulatif individuel</option>
             <option value="global">Synthèse comptable globale</option>

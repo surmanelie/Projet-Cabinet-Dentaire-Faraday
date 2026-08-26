@@ -27,7 +27,12 @@ export function isEmailConfigured(): boolean {
 }
 
 export function getAppUrl(): string {
-  return process.env.APP_URL ?? "http://localhost:3000";
+  return (
+    process.env.APP_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
+    "http://localhost:3000"
+  );
 }
 
 type SendResult = { sent: boolean };

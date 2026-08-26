@@ -43,14 +43,14 @@ describe("computeFullTimeWeek — semaine normale", () => {
 
 describe("computeFullTimeWeek — heures supplémentaires", () => {
   it("majore à 25% de la 36e à la 43e heure", () => {
-    const r = computeFullTimeWeek(40, DEFAULT_RULES);
+    const r = computeFullTimeWeek(40, 35, DEFAULT_RULES);
     expect(r.overtimeTier1Hours).toBe(5);
     expect(r.overtimeTier2Hours).toBe(0);
     expect(r.overtimeTier1Pay).toBeCloseTo(5 * 1.25);
   });
 
   it("majore à 50% au-delà de la 43e heure", () => {
-    const r = computeFullTimeWeek(45, DEFAULT_RULES);
+    const r = computeFullTimeWeek(45, 35, DEFAULT_RULES);
     expect(r.overtimeTier1Hours).toBe(8); // 35 -> 43
     expect(r.overtimeTier2Hours).toBe(2); // 43 -> 45
     expect(r.overtimeTier2Pay).toBeCloseTo(2 * 1.5);
@@ -75,10 +75,17 @@ describe("computePartTimeWeek — temps partiel", () => {
 
 describe("déficit d'heures", () => {
   it("un déficit n'est jamais majoré", () => {
-    const r = computeFullTimeWeek(30, DEFAULT_RULES);
+    const r = computeFullTimeWeek(30, 35, DEFAULT_RULES);
     expect(r.deficitHours).toBe(5);
     expect(r.overtimeTier1Pay).toBe(0);
     expect(r.overtimeTier2Pay).toBe(0);
+  });
+
+  it("le déficit se calcule contre les heures contractuelles réelles, pas le seuil générique de 35h", () => {
+    // Régression : un contrat à 10h/semaine qui n'a rien travaillé ne doit
+    // jamais afficher un déficit de 35h (bug constaté dans l'export CSV comptable).
+    const r = computeFullTimeWeek(0, 10, DEFAULT_RULES);
+    expect(r.deficitHours).toBe(10);
   });
 });
 
@@ -130,5 +137,20 @@ describe("computeMonthlySummary", () => {
       adjustmentMinutes: -120, // -2h, ex: trop payé le mois précédent
     });
     expect(summary.totalAdjustmentHours).toBe(-2);
+  });
+
+  it("le déficit mensuel reste cohérent avec le solde pour un petit contrat (régression export CSV)", () => {
+    // Un salarié à 10h/semaine (contractType AUTRE) n'ayant rien pointé ce
+    // mois-ci : le déficit doit correspondre à SON contrat (~43h/mois),
+    // pas au seuil temps plein générique (35h/sem ≈ 151h/mois).
+    const summary = computeMonthlySummary({
+      contractType: "AUTRE",
+      weeklyContractHours: 10,
+      workedMinutesByDay: [],
+      absenceHours: 0,
+      adjustmentMinutes: 0,
+    });
+    expect(summary.deficitHours).toBeCloseTo(summary.totalPlannedHours, 1);
+    expect(summary.deficitHours).toBeCloseTo(-summary.balanceHours, 1);
   });
 });

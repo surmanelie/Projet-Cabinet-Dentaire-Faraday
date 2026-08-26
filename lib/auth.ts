@@ -72,3 +72,22 @@ export async function getFreshSessionUser() {
   if (!user || !user.active) return null;
   return user;
 }
+
+/**
+ * Comme getSession(), mais revérifie en base que le compte est toujours actif
+ * et que son rôle n'a pas changé depuis l'émission du JWT. À utiliser dans
+ * les actions sensibles (gestion des comptes, sauvegarde/restauration,
+ * paramètres) : un JWT reste valide jusqu'à son expiration (jusqu'à 30 jours
+ * avec "rester connecté"), donc sans cette vérification un compte désactivé
+ * ou rétrogradé après connexion garderait ses anciens droits jusque-là.
+ */
+export async function getVerifiedSession(): Promise<SessionUser | null> {
+  const session = await getSession();
+  if (!session) return null;
+  const fresh = await prisma.user.findUnique({
+    where: { id: session.id },
+    select: { id: true, firstName: true, lastName: true, email: true, role: true, color: true, active: true },
+  });
+  if (!fresh || !fresh.active || fresh.role !== session.role) return null;
+  return fresh;
+}

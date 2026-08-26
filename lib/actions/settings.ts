@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { getVerifiedSession } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { getCabinetSettings } from "@/lib/rules";
 
 export async function updateCabinetSettingsAction(_prev: unknown, formData: FormData) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
 
   const name = String(formData.get("name") || "").trim();
@@ -38,7 +38,7 @@ export async function updateCabinetSettingsAction(_prev: unknown, formData: Form
 }
 
 export async function updateRulesConfigAction(_prev: unknown, formData: FormData) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session || session.role !== "ADMIN") return { error: "Non autorisé" };
 
   const rules = {

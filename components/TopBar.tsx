@@ -33,7 +33,7 @@ export default async function TopBar({ user, notifications }: { user: SessionUse
       <Link href="/" className="hidden sm:block">
         <Logo showName />
       </Link>
-      <div className="ml-2">{people.length > 0 && <SearchBar people={people} />}</div>
+      <div className="ml-2 hidden lg:block">{people.length > 0 && <SearchBar people={people} />}</div>
 
       <div className="ml-auto flex items-center gap-4">
         <NotificationBell notifications={notifications} />

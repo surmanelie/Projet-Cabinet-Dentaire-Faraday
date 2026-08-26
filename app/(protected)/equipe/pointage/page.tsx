@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAllTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
+import { getAppUrl } from "@/lib/email";
 import SectionLabel from "@/components/SectionLabel";
 import QrCodes from "./QrCodes";
 import AdminClockEdit from "./AdminClockEdit";
@@ -61,7 +62,7 @@ export default async function AdminPointagePage() {
       </div>
 
       {/* ── QR Codes ── */}
-      <QrCodes />
+      <QrCodes appUrl={getAppUrl()} />
 
       {/* ── Statut des assistantes ── */}
       <div className="card">
@@ -73,8 +74,6 @@ export default async function AdminPointagePage() {
             {statusList.map((a) => {
               const s = STATUS_LABELS[a.status];
               const myEntries = todayEntries.filter((e) => e.userId === a.id);
-              const firstEntry = myEntries.find((e) => e.action === "DEBUT_JOURNEE");
-              const lastEntry = myEntries[myEntries.length - 1];
 
               return (
                 <div key={a.id} className="py-3">

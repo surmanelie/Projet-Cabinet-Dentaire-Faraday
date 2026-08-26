@@ -26,7 +26,7 @@ export default function EditDayForm({
     <form action={formAction} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">Heure d'arrivée</label>
+          <label className="label">Heure d&apos;arrivée</label>
           <input type="time" name="start" defaultValue={defaultStart} required className="input" />
         </div>
         <div>

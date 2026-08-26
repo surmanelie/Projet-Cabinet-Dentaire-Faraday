@@ -1,9 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 
-// Singleton du client Prisma pour éviter d'épuiser les connexions SQLite
-// en développement (hot-reload Next.js).
+// Singleton du client Prisma pour éviter d'épuiser le pool de connexions
+// PostgreSQL en développement (hot-reload Next.js).
 declare global {
-  // eslint-disable-next-line no-var
   var __prisma: PrismaClient | undefined;
 }
 

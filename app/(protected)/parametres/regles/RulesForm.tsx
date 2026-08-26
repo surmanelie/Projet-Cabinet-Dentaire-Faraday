@@ -21,7 +21,7 @@ export default function RulesForm({ rules }: { rules: RulesConfig }) {
           />
         </div>
         <div>
-          <label className="label">Borne heures sup. majoration 25% (jusqu'à, h/semaine)</label>
+          <label className="label">Borne heures sup. majoration 25% (jusqu&apos;à, h/semaine)</label>
           <input
             type="number"
             step="0.5"
