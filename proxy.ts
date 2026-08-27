@@ -24,7 +24,7 @@ const PUBLIC_PATHS = [
  * (cf. lib/permissions.ts -> ROUTE_ACCESS). Cette vérification est en plus
  * des contrôles faits dans chaque page/action — défense en profondeur.
  */
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (
