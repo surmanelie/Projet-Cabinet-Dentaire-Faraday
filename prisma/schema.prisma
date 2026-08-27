@@ -371,4 +371,8 @@ model CabinetSettings {
   allowLeaveRequests Boolean @default(true)
   smtpConfigJson   String?
   rulesConfigJson  String  @default("{}")
+  // Adresse IP publique du cabinet : si renseignée, le pointage QR/PIN
+  // (page /pointer) n'est accepté que depuis cette IP, pour s'assurer que
+  // la personne pointe bien depuis le cabinet (Wi-Fi du cabinet).
+  cabinetPublicIp  String?
 }

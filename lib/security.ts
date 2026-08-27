@@ -1,6 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import { prisma } from "./prisma";
+import { getCabinetSettings } from "./rules";
 
 /**
  * Valide la robustesse d'un mot de passe. Renvoie un message d'erreur si le
@@ -35,6 +36,17 @@ export async function isLoginBlocked(userId: string): Promise<boolean> {
     where: { actorId: userId, action: "LOGIN_FAILED", createdAt: { gte: since } },
   });
   return count >= LOGIN_MAX_FAILURES;
+}
+
+/**
+ * Vérifie que le pointage QR/PIN se fait bien depuis l'IP publique du
+ * cabinet (Wi-Fi du cabinet), si l'admin en a configuré une dans
+ * Paramètres. Sans IP configurée, aucune restriction n'est appliquée.
+ */
+export async function isCabinetIpAllowed(ip: string): Promise<boolean> {
+  const settings = await getCabinetSettings();
+  if (!settings.cabinetPublicIp) return true;
+  return ip === settings.cabinetPublicIp;
 }
 
 /** true si cette IP a trop de codes de pointage erronés récents. */
