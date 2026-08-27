@@ -30,6 +30,11 @@ export function getAppUrl(): string {
   return (
     process.env.APP_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
+    // VERCEL_PROJECT_PRODUCTION_URL est le domaine de production stable
+    // (ex: mon-projet.vercel.app) ; VERCEL_URL est propre à CHAQUE
+    // déploiement (change à chaque déploiement) et ne doit servir qu'en
+    // tout dernier recours (ex: preview sans domaine de prod assigné).
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined) ??
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
     "http://localhost:3000"
   );
