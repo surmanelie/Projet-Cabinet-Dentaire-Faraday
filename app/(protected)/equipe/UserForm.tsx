@@ -28,8 +28,8 @@ const ROLE_LABELS: Record<string, string> = {
 
 /**
  * Formulaire de création OU de modification d'un utilisateur.
- * - Sans `user` : mode création (rôle choisi, mot de passe direct optionnel
- *   sinon invitation par lien).
+ * - Sans `user` : mode création (rôle choisi, mot de passe initial défini par
+ *   l'admin — la personne devra le personnaliser à sa première connexion).
  * - Avec `user` : mode édition (rôle figé, mot de passe optionnel pour
  *   réinitialiser).
  */
@@ -46,7 +46,6 @@ export default function UserForm({
     initialState
   );
   const [role, setRole] = useState(user?.role ?? "ASSISTANT");
-  const [copied, setCopied] = useState(false);
   const [password, setPassword] = useState("");
   const [clockPin, setClockPin] = useState("");
 
@@ -64,12 +63,6 @@ export default function UserForm({
   // Ferme le modal en édition dès que la sauvegarde réussit.
   if (isEdit && state.success && onDone) {
     setTimeout(onDone, 400);
-  }
-
-  async function copyLink() {
-    if (!state.inviteLink) return;
-    await navigator.clipboard.writeText(state.inviteLink);
-    setCopied(true);
   }
 
   return (
@@ -197,17 +190,18 @@ export default function UserForm({
 
       <div>
         <label className="label">
-          Mot de passe {isEdit ? "(laisser vide pour ne pas changer)" : "(optionnel)"}
+          Mot de passe {isEdit ? "(laisser vide pour ne pas changer)" : "initial"}
         </label>
         <div className="flex gap-2">
           <input
             name="password"
             type="text"
+            required={!isEdit}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="input"
             autoComplete="off"
-            placeholder={isEdit ? "Nouveau mot de passe…" : "Laisser vide pour envoyer un lien d'invitation"}
+            placeholder={isEdit ? "Nouveau mot de passe…" : "Mot de passe à transmettre à la personne"}
           />
           <button type="button" onClick={generatePassword} className="btn-secondary whitespace-nowrap text-xs">
             Générer
@@ -216,35 +210,15 @@ export default function UserForm({
         <p className="mt-1 text-xs text-ardoise-400">
           {isEdit
             ? "Si rempli, le mot de passe est remplacé immédiatement (min. 8 caractères)."
-            : "Si rempli, l'assistante se connecte directement avec ce mot de passe (min. 8 caractères). Sinon, un lien d'activation est généré."}
+            : "La personne se connecte directement avec ce mot de passe (min. 8 caractères), et devra le personnaliser à sa première connexion."}
         </p>
       </div>
 
       {state.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      {state.success && !state.inviteLink && (
+      {state.success && (
         <p className="rounded-lg bg-faraday-50 px-3 py-2 text-sm text-faraday-700">
           {isEdit ? "Modifications enregistrées." : "Compte créé avec le mot de passe défini."}
         </p>
-      )}
-      {state.success && state.inviteLink && (
-        <div className="rounded-lg bg-faraday-50 px-3 py-2 text-sm text-faraday-700">
-          {state.emailSent ? (
-            <p>Compte créé. Un email d&apos;invitation a été envoyé pour que la personne crée son mot de passe.</p>
-          ) : (
-            <>
-              <p>
-                Compte créé. L&apos;envoi automatique d&apos;email n&apos;est pas encore configuré : transmets ce
-                lien à la personne pour qu&apos;elle crée son mot de passe (valable 7 jours).
-              </p>
-              <div className="mt-2 flex items-center gap-2">
-                <code className="flex-1 break-all rounded bg-white px-2 py-1 text-xs">{state.inviteLink}</code>
-                <button type="button" onClick={copyLink} className="btn-secondary text-xs whitespace-nowrap">
-                  {copied ? "Copié !" : "Copier"}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
       )}
 
       <button type="submit" disabled={pending} className="btn-primary">

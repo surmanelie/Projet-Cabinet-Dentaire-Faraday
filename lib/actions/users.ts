@@ -7,15 +7,13 @@ import { getVerifiedSession } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
 import { isAdminOrRh } from "@/lib/permissions";
-import { sendInviteEmail, sendPasswordResetEmail, getAppUrl } from "@/lib/email";
+import { sendPasswordResetEmail, getAppUrl } from "@/lib/email";
 import { validatePasswordStrength } from "@/lib/security";
 import type { ContractType, Role } from "@prisma/client";
 
 export type UserFormResult = {
   error?: string;
   success?: boolean;
-  inviteLink?: string;
-  emailSent?: boolean;
 };
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
@@ -94,18 +92,14 @@ export async function createUserAction(
     clockPinHash = await hashPassword(clockPin);
   }
 
-  // Deux modes de création au choix de l'admin :
-  //  1. Mot de passe défini directement (identifiant + mot de passe donnés
-  //     de la main à la main à l'assistante) — pratique tant que le SMTP
-  //     n'est pas configuré.
-  //  2. Invitation : un lien permet à la personne de choisir son mot de passe.
+  // L'admin définit le mot de passe initial directement (identifiant + mot
+  // de passe donnés de la main à la main). La personne devra le personnaliser
+  // à sa première connexion (voir mustChangePassword / /changer-mot-de-passe) :
+  // aucun email d'invitation n'est nécessaire.
   const password = String(formData.get("password") ?? "");
-  const useDirectPassword = password.trim().length > 0;
-
-  if (useDirectPassword) {
-    const weak = validatePasswordStrength(password);
-    if (weak) return { error: weak };
-  }
+  if (!password.trim()) return { error: "Merci de définir un mot de passe initial." };
+  const weak = validatePasswordStrength(password);
+  if (weak) return { error: weak };
 
   const profileData = {
     ...(role === "ASSISTANT" && {
@@ -116,36 +110,6 @@ export async function createUserAction(
     }),
   };
 
-  if (useDirectPassword) {
-    const user = await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        email,
-        phone,
-        color,
-        role,
-        passwordHash: await hashPassword(password),
-        mustChangePassword: false,
-        invitedById: session.id,
-        ...(clockPinHash ? { clockPinHash } : {}),
-        ...profileData,
-      },
-    });
-
-    await writeAuditLog({ actorId: session.id, action: "CREATE_USER", entityType: "User", entityId: user.id, newValue: { firstName, lastName, email, role, credentials: "direct" } });
-
-    revalidatePath("/equipe");
-    return { success: true };
-  }
-
-  // Mot de passe temporaire inutilisable tant que l'invitation n'est pas
-  // acceptée : la connexion ne sera possible qu'après activation du compte
-  // via le lien envoyé par email (ou transmis manuellement par l'admin).
-  const placeholderHash = await hashPassword(randomPassword());
-  const inviteToken = generateInviteToken();
-  const inviteTokenExpiresAt = new Date(Date.now() + INVITE_TTL_MS);
-
   const user = await prisma.user.create({
     data: {
       firstName,
@@ -154,23 +118,18 @@ export async function createUserAction(
       phone,
       color,
       role,
-      passwordHash: placeholderHash,
+      passwordHash: await hashPassword(password),
       mustChangePassword: true,
-      inviteToken,
-      inviteTokenExpiresAt,
       invitedById: session.id,
       ...(clockPinHash ? { clockPinHash } : {}),
       ...profileData,
     },
   });
 
-  const inviteLink = `${getAppUrl()}/activer-compte?token=${inviteToken}`;
-  const { sent } = await sendInviteEmail(email, firstName, inviteLink);
-
-  await writeAuditLog({ actorId: session.id, action: "CREATE_USER", entityType: "User", entityId: user.id, newValue: { firstName, lastName, email, role, credentials: "invite" } });
+  await writeAuditLog({ actorId: session.id, action: "CREATE_USER", entityType: "User", entityId: user.id, newValue: { firstName, lastName, email, role, credentials: "direct" } });
 
   revalidatePath("/equipe");
-  return { success: true, inviteLink, emailSent: sent };
+  return { success: true };
 }
 
 /**

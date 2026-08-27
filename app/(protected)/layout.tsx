@@ -20,10 +20,24 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   // il sera simplement remplacé à la prochaine connexion réussie.
   const fresh = await prisma.user.findUnique({
     where: { id: session.id },
-    select: { id: true, firstName: true, lastName: true, email: true, role: true, color: true, active: true },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+      color: true,
+      active: true,
+      mustChangePassword: true,
+    },
   });
   if (!fresh || !fresh.active || fresh.role !== session.role) {
     redirect("/login");
+  }
+  // Mot de passe initial défini par l'admin : bloque tout accès à l'espace
+  // protégé tant que la personne ne l'a pas personnalisé.
+  if (fresh.mustChangePassword) {
+    redirect("/changer-mot-de-passe");
   }
   const currentUser: SessionUser = fresh;
 
