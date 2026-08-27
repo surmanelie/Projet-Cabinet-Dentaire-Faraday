@@ -15,13 +15,17 @@ export async function updateCabinetSettingsAction(_prev: unknown, formData: Form
   const timezone = String(formData.get("timezone") || "Europe/Paris");
   const allowFutureEdits = formData.get("allowFutureEdits") === "on";
   const allowLeaveRequests = formData.get("allowLeaveRequests") === "on";
+  const cabinetPublicIp = String(formData.get("cabinetPublicIp") || "").trim() || null;
 
   if (!name) return { error: "Le nom du cabinet est requis." };
+  if (cabinetPublicIp && !/^\d{1,3}(\.\d{1,3}){3}$/.test(cabinetPublicIp)) {
+    return { error: "L'adresse IP doit être au format 123.45.67.89." };
+  }
 
   const current = await getCabinetSettings();
   const updated = await prisma.cabinetSettings.update({
     where: { id: current.id },
-    data: { name, address, timezone, allowFutureEdits, allowLeaveRequests },
+    data: { name, address, timezone, allowFutureEdits, allowLeaveRequests, cabinetPublicIp },
   });
 
   await writeAuditLog({
