@@ -12,6 +12,25 @@ export type ClockEvent = {
   timestamp: Date;
 };
 
+export type ClockStatus =
+  | "ABSENT"         // pas encore pointé aujourd'hui
+  | "PRESENT"        // début journée enregistré, pas en pause
+  | "EN_PAUSE"       // pause en cours
+  | "JOURNEE_TERMINEE"; // fin journée enregistrée
+
+/**
+ * Actions de pointage autorisées selon l'état courant — un seul QR ou une
+ * seule page /pointage, la ou les bonnes options. Défini ici (module pur,
+ * sans "use server") car un fichier Server Actions ne peut exporter que
+ * des fonctions async, jamais une constante.
+ */
+export const ALLOWED_BY_STATUS: Record<ClockStatus, ClockEvent["action"][]> = {
+  ABSENT: ["DEBUT_JOURNEE"],
+  PRESENT: ["DEBUT_PAUSE", "FIN_JOURNEE"],
+  EN_PAUSE: ["FIN_PAUSE"],
+  JOURNEE_TERMINEE: [],
+};
+
 export type DerivedDay = {
   /** "HH:MM" — premier début de journée du jour, ou null si aucun. */
   actualStart: string | null;

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession, verifyPassword } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
 import { writeAuditLog } from "@/lib/audit";
-import { deriveDayFromClock } from "@/lib/clock-hours";
+import { deriveDayFromClock, ALLOWED_BY_STATUS, type ClockStatus } from "@/lib/clock-hours";
 import { getClientIp, isPinBlocked, isCabinetIpAllowed } from "@/lib/security";
 import type { ClockAction } from "@prisma/client";
 
@@ -86,12 +86,6 @@ export type ClockResult = {
   userName?: string;
 };
 
-export type ClockStatus =
-  | "ABSENT"         // pas encore pointé aujourd'hui
-  | "PRESENT"        // début journée enregistré, pas en pause
-  | "EN_PAUSE"       // pause en cours
-  | "JOURNEE_TERMINEE"; // fin journée enregistrée
-
 // ─── Règles de succession des actions ─────────────────────────────────────────
 
 /**
@@ -151,6 +145,15 @@ export async function recordClockAction(action: ClockAction): Promise<ClockResul
   const session = await getSession();
   if (!session) {
     return { error: "Vous devez être connecté pour pointer." };
+  }
+
+  // Restriction Wi-Fi cabinet (optionnelle, configurée dans Paramètres) :
+  // s'applique au pointage depuis l'espace connecté au même titre que le
+  // pointage QR/PIN — seule la connexion à l'application elle-même reste
+  // possible depuis n'importe où.
+  const ip = await getClientIp();
+  if (!(await isCabinetIpAllowed(ip))) {
+    return { error: "Le pointage n'est possible que depuis le Wi-Fi du cabinet." };
   }
 
   // Récupère le dernier pointage du jour de cette assistante
@@ -417,13 +420,6 @@ export async function recordClockByPinAction(
   };
 }
 
-// Actions autorisées selon l'état courant — un seul QR, la bonne option.
-const ALLOWED_BY_STATUS: Record<ClockStatus, ClockAction[]> = {
-  ABSENT: ["DEBUT_JOURNEE"],
-  PRESENT: ["DEBUT_PAUSE", "FIN_JOURNEE"],
-  EN_PAUSE: ["FIN_PAUSE"],
-  JOURNEE_TERMINEE: [],
-};
 
 export type PinStatusResult = {
   error?: string;

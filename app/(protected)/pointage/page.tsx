@@ -1,27 +1,29 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { getTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
+import { ALLOWED_BY_STATUS } from "@/lib/clock-hours";
 import SectionLabel from "@/components/SectionLabel";
+import type { ClockAction } from "@prisma/client";
 
-const ACTION_LINKS = [
-  { href: "/pointage/debut",       label: "Début de journée", color: "border-ardoise-200 bg-white hover:border-faraday-700" },
-  { href: "/pointage/pause-debut", label: "Début de pause",   color: "border-ardoise-200 bg-white hover:border-faraday-700" },
-  { href: "/pointage/pause-fin",   label: "Fin de pause",     color: "border-ardoise-200 bg-white hover:border-faraday-700" },
-  { href: "/pointage/fin",         label: "Fin de journée",   color: "border-ardoise-200 bg-white hover:border-faraday-700" },
-];
+const ACTION_HREF: Record<ClockAction, string> = {
+  DEBUT_JOURNEE: "/pointage/debut",
+  DEBUT_PAUSE: "/pointage/pause-debut",
+  FIN_PAUSE: "/pointage/pause-fin",
+  FIN_JOURNEE: "/pointage/fin",
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  DEBUT_JOURNEE: "Début de journée",
+  DEBUT_PAUSE: "Début de pause",
+  FIN_PAUSE: "Fin de pause",
+  FIN_JOURNEE: "Fin de journée",
+};
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   ABSENT:            { label: "Absent·e",          color: "bg-ardoise-100 text-ardoise-600" },
   PRESENT:           { label: "En poste",           color: "bg-emerald-100 text-emerald-700" },
   EN_PAUSE:          { label: "En pause",           color: "bg-amber-100 text-amber-700" },
   JOURNEE_TERMINEE:  { label: "Journée terminée",   color: "bg-slate-100 text-slate-600" },
-};
-
-const ACTION_LABELS: Record<string, string> = {
-  DEBUT_JOURNEE: "Début journée",
-  DEBUT_PAUSE:   "Début pause",
-  FIN_PAUSE:     "Fin pause",
-  FIN_JOURNEE:   "Fin journée",
 };
 
 export default async function PointageIndexPage() {
@@ -34,6 +36,7 @@ export default async function PointageIndexPage() {
   ]);
 
   const statusInfo = STATUS_LABELS[status];
+  const allowed = ALLOWED_BY_STATUS[status];
 
   return (
     <div className="max-w-lg space-y-6">
@@ -46,22 +49,25 @@ export default async function PointageIndexPage() {
         </p>
       </div>
 
-      {/* Boutons de pointage rapide (même sur PC) */}
+      {/* Seules les actions cohérentes avec l'état actuel sont proposées —
+          même logique que le pointage QR/PIN. */}
       <div className="card">
-        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">
-          Scanner un QR code ou pointer directement
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {ACTION_LINKS.map((a) => (
-            <Link
-              key={a.href}
-              href={a.href}
-              className={`flex flex-col items-center rounded border p-4 text-center transition-all duration-200 ease-premium ${a.color}`}
-            >
-              <span className="text-sm font-medium text-ardoise-800">{a.label}</span>
-            </Link>
-          ))}
-        </div>
+        <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Pointer</p>
+        {allowed.length === 0 ? (
+          <p className="text-sm text-ardoise-400">Rien à pointer pour le moment — à demain !</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {allowed.map((a) => (
+              <Link
+                key={a}
+                href={ACTION_HREF[a]}
+                className="flex flex-col items-center rounded border border-ardoise-200 bg-white p-4 text-center transition-all duration-200 ease-premium hover:border-faraday-700"
+              >
+                <span className="text-sm font-medium text-ardoise-800">{ACTION_LABELS[a]}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Historique du jour */}
