@@ -117,8 +117,8 @@ export default async function EquipePage() {
           <div className="card">
             <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Ajouter un employé</p>
             <p className="mb-4 text-xs text-ardoise-500">
-              Définis un mot de passe directement pour une connexion immédiate, ou laisse le champ vide pour générer
-              un lien d&apos;activation à transmettre.
+              Définis un mot de passe initial à transmettre à la personne — elle devra le personnaliser à sa
+              première connexion.
             </p>
             <UserForm />
           </div>

@@ -37,32 +37,6 @@ export function getAppUrl(): string {
 
 type SendResult = { sent: boolean };
 
-export async function sendInviteEmail(
-  to: string,
-  firstName: string,
-  link: string
-): Promise<SendResult> {
-  const transport = getTransport();
-  if (!transport) {
-    console.log(`[email désactivé] Lien d'invitation pour ${to} : ${link}`);
-    return { sent: false };
-  }
-
-  await transport.sendMail({
-    from: process.env.SMTP_FROM ?? process.env.SMTP_USER,
-    to,
-    subject: "Activez votre compte FaradayBoard",
-    html: `
-      <p>Bonjour ${firstName},</p>
-      <p>Un compte vient d'être créé pour vous sur <strong>FaradayBoard</strong>, l'outil de gestion des horaires du Cabinet Faraday.</p>
-      <p>Cliquez sur le lien ci-dessous pour choisir votre mot de passe et activer votre compte :</p>
-      <p><a href="${link}">${link}</a></p>
-      <p>Ce lien est valable 7 jours. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
-    `,
-  });
-  return { sent: true };
-}
-
 export async function sendPasswordResetEmail(
   to: string,
   firstName: string,

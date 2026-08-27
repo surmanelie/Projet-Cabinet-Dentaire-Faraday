@@ -112,6 +112,12 @@ export async function loginAction(
     entityId: user.id,
   });
 
+  // Mot de passe initial défini par l'admin à la création : la personne doit
+  // le personnaliser avant d'accéder au reste de l'application.
+  if (user.mustChangePassword) {
+    redirect("/changer-mot-de-passe");
+  }
+
   // Si l'utilisateur venait d'une page protégée (ex: scan QR), on l'y renvoie.
   const safeRedirect =
     redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
@@ -119,6 +125,38 @@ export async function loginAction(
       : defaultRouteForRole(user.role);
 
   redirect(safeRedirect);
+}
+
+/**
+ * Changement de mot de passe obligatoire à la première connexion (compte
+ * créé par l'admin avec un mot de passe initial). Nécessite une session
+ * active mais aucun autre rôle particulier : n'importe quel compte avec
+ * mustChangePassword=true doit pouvoir personnaliser son mot de passe.
+ */
+export async function changeOwnPasswordAction(
+  _prev: ActivateAccountResult,
+  formData: FormData
+): Promise<ActivateAccountResult> {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  const weak = validatePasswordStrength(password);
+  if (weak) return { error: weak };
+  if (password !== confirmPassword) {
+    return { error: "Les mots de passe ne correspondent pas." };
+  }
+
+  await prisma.user.update({
+    where: { id: session.id },
+    data: { passwordHash: await hashPassword(password), mustChangePassword: false },
+  });
+
+  await writeAuditLog({ actorId: session.id, action: "CHANGE_OWN_PASSWORD", entityType: "User", entityId: session.id });
+
+  redirect(defaultRouteForRole(session.role));
 }
 
 export async function logoutAction() {
