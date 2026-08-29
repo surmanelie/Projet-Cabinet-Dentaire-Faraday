@@ -24,7 +24,7 @@ export default async function MesHorairesPage({
   const nextYear = month === 12 ? year + 1 : year;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <SectionLabel>Agenda</SectionLabel>
         <h1 className="mt-3 page-title">Mon agenda</h1>
