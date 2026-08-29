@@ -157,6 +157,56 @@ export function computePartTimeWeek(
   };
 }
 
+export type ScheduleTemplateByDow = Record<number, { startTime: string; endTime: string }>;
+export type PlannedDayOverride = { plannedStart?: string | null; plannedEnd?: string | null };
+
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+/**
+ * Heures « programmées » (planning) d'UN jour — distinctes des heures
+ * réellement pointées. L'horaire effectif est celui de l'override
+ * `WorkEntry.plannedStart/plannedEnd` s'il existe, sinon celui de la
+ * semaine type (`ScheduleTemplate`) du jour de semaine correspondant.
+ * Aucune pause n'est déduite ici (les gabarits de semaine type n'ont pas
+ * de durée de pause exploitée ailleurs dans l'app — même simplification
+ * que l'affichage actuel de l'agenda).
+ */
+export function computeProgrammedMinutesForDay(
+  templatesByDow: ScheduleTemplateByDow,
+  override: PlannedDayOverride | undefined,
+  dayOfWeek: number,
+  rounding: RulesConfig["rounding"] = "EXACT"
+): number {
+  const start = override?.plannedStart ?? templatesByDow[dayOfWeek]?.startTime ?? null;
+  const end = override?.plannedEnd ?? templatesByDow[dayOfWeek]?.endTime ?? null;
+  if (!start || !end) return 0;
+  return computeDayMinutes({ start, end, breakMinutes: 0 }, rounding);
+}
+
+/**
+ * Somme des heures programmées sur un mois entier — utilisée à la fois
+ * côté serveur (total initial affiché) et côté client (simulation en
+ * direct pendant une sélection/édition en masse, avant validation).
+ */
+export function computeProgrammedMinutesForMonth(
+  templatesByDow: ScheduleTemplateByDow,
+  entriesByDate: Record<string, PlannedDayOverride>,
+  year: number,
+  month: number,
+  rounding: RulesConfig["rounding"] = "EXACT"
+): number {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let total = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayOfWeek = new Date(year, month - 1, d).getDay();
+    const key = `${year}-${pad2(month)}-${pad2(d)}`;
+    total += computeProgrammedMinutesForDay(templatesByDow, entriesByDate[key], dayOfWeek, rounding);
+  }
+  return total;
+}
+
 export type MonthlySummaryInput = {
   contractType: "TEMPS_PLEIN" | "TEMPS_PARTIEL" | "AUTRE";
   weeklyContractHours: number;

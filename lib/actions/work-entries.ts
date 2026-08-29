@@ -151,6 +151,103 @@ export async function correctEntryAction(
   revalidatePath("/planning");
 }
 
+function pad2(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function parseDateKey(key: string): Date {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function toDateKey(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+export type BulkEditResult = { error?: string; success?: boolean; skippedLocked?: string[] };
+
+/**
+ * Programme (planifie) l'horaire d'un ou plusieurs jours pour une
+ * assistante, en une seule opération — admin/RH uniquement. N'écrit QUE
+ * `plannedStart`/`plannedEnd`/`comment` : ne touche jamais `actualStart`/
+ * `actualEnd`/`breakMinutes`/`status`, qui restent la source de vérité du
+ * temps RÉELLEMENT pointé (alimentée uniquement par le pointage QR/PIN ou
+ * une correction explicite). Les jours verrouillés (mois validé) sont
+ * ignorés et remontés dans `skippedLocked`.
+ */
+export async function bulkUpdateWorkEntriesAction(
+  userId: string,
+  dateKeys: string[],
+  data: { plannedStart: string; plannedEnd: string; comment?: string }
+): Promise<BulkEditResult> {
+  const session = await getSession();
+  if (!session || !isAdminOrRh(session.role)) return { error: "Non autorisé." };
+  if (!data.plannedStart || !data.plannedEnd) {
+    return { error: "Merci de renseigner une heure de début et de fin." };
+  }
+  if (dateKeys.length === 0) return { error: "Aucun jour sélectionné." };
+
+  const dates = dateKeys.map(parseDateKey);
+
+  const existing = await prisma.workEntry.findMany({
+    where: { userId, date: { in: dates } },
+  });
+  const lockedByTime = new Set(existing.filter((e) => e.locked).map((e) => e.date.getTime()));
+
+  const skippedLocked: string[] = [];
+  const toApply: Date[] = [];
+  for (const d of dates) {
+    if (lockedByTime.has(d.getTime())) {
+      skippedLocked.push(toDateKey(d));
+    } else {
+      toApply.push(d);
+    }
+  }
+
+  if (toApply.length > 0) {
+    await prisma.$transaction(
+      toApply.map((date) =>
+        prisma.workEntry.upsert({
+          where: { userId_date: { userId, date } },
+          update: {
+            plannedStart: data.plannedStart,
+            plannedEnd: data.plannedEnd,
+            ...(data.comment ? { comment: data.comment } : {}),
+          },
+          create: {
+            userId,
+            date,
+            plannedStart: data.plannedStart,
+            plannedEnd: data.plannedEnd,
+            comment: data.comment ?? null,
+            source: "planning_admin",
+            status: "PRE_REMPLI",
+          },
+        })
+      )
+    );
+
+    await writeAuditLog({
+      actorId: session.id,
+      action: "BULK_UPDATE_PLANNING",
+      entityType: "WorkEntry",
+      entityId: userId,
+      newValue: {
+        dates: toApply.map(toDateKey),
+        plannedStart: data.plannedStart,
+        plannedEnd: data.plannedEnd,
+      },
+    });
+  }
+
+  revalidatePath("/planning");
+  revalidatePath("/equipe/heures");
+  revalidatePath("/mes-horaires");
+  revalidatePath("/dashboard");
+
+  return { success: true, skippedLocked: skippedLocked.length ? skippedLocked : undefined };
+}
+
 export async function validateEntryAction(entryId: string) {
   const session = await getSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");

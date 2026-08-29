@@ -6,6 +6,7 @@ import { getAgendaData, dateKey } from "@/lib/agenda";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
 import SectionLabel from "@/components/SectionLabel";
 import MonthAgenda from "@/components/MonthAgenda";
+import SelectablePlanningCalendar from "@/components/SelectablePlanningCalendar";
 import HoursGauge from "@/components/HoursGauge";
 import AgendaUserPicker from "./AgendaUserPicker";
 import ScheduleTemplateForm from "./ScheduleTemplateForm";
@@ -26,7 +27,13 @@ export default async function PlanningPage({
 
   const users = await prisma.user.findMany({
     where: { active: true, role: { in: ["ASSISTANT", "PRATICIEN"] } },
-    select: { id: true, firstName: true, lastName: true, role: true },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      assistantProfile: { select: { weeklyContractHours: true } },
+    },
     orderBy: [{ role: "asc" }, { lastName: "asc" }],
   });
 
@@ -77,7 +84,7 @@ export default async function PlanningPage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <SectionLabel>Agenda</SectionLabel>
@@ -103,15 +110,29 @@ export default async function PlanningPage({
         </div>
       )}
 
-      <MonthAgenda
-        year={year}
-        month={month}
-        todayKey={dateKey(now)}
-        templatesByDow={templatesByDow}
-        entriesByDate={entriesByDate}
-        prevHref={`/planning?${q}&month=${prevMonth}&year=${prevYear}`}
-        nextHref={`/planning?${q}&month=${nextMonth}&year=${nextYear}`}
-      />
+      {admin && selectedId ? (
+        <SelectablePlanningCalendar
+          userId={selectedId}
+          year={year}
+          month={month}
+          todayKey={dateKey(now)}
+          templatesByDow={templatesByDow}
+          entriesByDate={entriesByDate}
+          prevHref={`/planning?${q}&month=${prevMonth}&year=${prevYear}`}
+          nextHref={`/planning?${q}&month=${nextMonth}&year=${nextYear}`}
+          weeklyContractHours={selected?.assistantProfile?.weeklyContractHours ?? 35}
+        />
+      ) : (
+        <MonthAgenda
+          year={year}
+          month={month}
+          todayKey={dateKey(now)}
+          templatesByDow={templatesByDow}
+          entriesByDate={entriesByDate}
+          prevHref={`/planning?${q}&month=${prevMonth}&year=${prevYear}`}
+          nextHref={`/planning?${q}&month=${nextMonth}&year=${nextYear}`}
+        />
+      )}
 
       {admin && selectedId && (
         <details className="card">

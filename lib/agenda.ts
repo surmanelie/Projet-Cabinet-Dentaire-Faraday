@@ -36,6 +36,9 @@ export async function getAgendaData(userId: string, year: number, month: number)
       actualStart: e.actualStart,
       actualEnd: e.actualEnd,
       comment: e.comment,
+      plannedStart: e.plannedStart,
+      plannedEnd: e.plannedEnd,
+      locked: e.locked,
     };
   }
 
