@@ -51,7 +51,7 @@ export default async function HeuresEquipePage({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <SectionLabel>Équipe</SectionLabel>
-          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Suivi des heures</h1>
+          <h1 className="mt-3 page-title">Suivi des heures</h1>
           <p className="mt-2 text-sm text-ardoise-500">
             Heures travaillées vs. heures contractuelles, par personne, pour le mois sélectionné. Le solde indique
             les heures manquantes (négatif) ou les heures en plus / supplémentaires (positif).

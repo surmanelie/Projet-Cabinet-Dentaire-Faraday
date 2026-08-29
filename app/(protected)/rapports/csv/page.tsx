@@ -13,7 +13,7 @@ export default async function RapportsCsvPage() {
     <div className="max-w-2xl space-y-8">
       <div>
         <SectionLabel>Rapports</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Export CSV comptable</h1>
+        <h1 className="mt-3 page-title">Export CSV comptable</h1>
       </div>
       <div className="card">
         <CsvExportForm />

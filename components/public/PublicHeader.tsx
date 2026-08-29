@@ -7,7 +7,7 @@ export default function PublicHeader() {
       <div className="mx-auto flex max-w-content items-center gap-4 px-6 py-5 md:px-12">
         <Link href="/" className="flex items-center gap-3" aria-label="Surmaly">
           <LogoMark size={32} />
-          <span className="font-serif text-lg italic tracking-tight text-ardoise-900">Surmaly</span>
+          <span className="font-semibold tracking-tight text-lg text-ardoise-900">Surmaly</span>
         </Link>
 
         <div className="ml-auto flex items-center gap-2">

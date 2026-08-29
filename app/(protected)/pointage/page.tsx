@@ -42,7 +42,7 @@ export default async function PointageIndexPage() {
     <div className="max-w-lg space-y-6">
       <div>
         <SectionLabel>Mon suivi</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Pointage</h1>
+        <h1 className="mt-3 page-title">Pointage</h1>
         <p className="mt-2 text-sm text-ardoise-500">
           Statut actuel :{" "}
           <span className={`badge ${statusInfo.color}`}>{statusInfo.label}</span>

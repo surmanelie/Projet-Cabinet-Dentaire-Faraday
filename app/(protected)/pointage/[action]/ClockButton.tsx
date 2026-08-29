@@ -42,7 +42,7 @@ export default function ClockButton({ action }: { action: string }) {
             <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h1 className="font-serif text-2xl italic text-ardoise-900">Pointage enregistré</h1>
+        <h1 className="modal-title">Pointage enregistré</h1>
         <div className="space-y-2.5 rounded border border-ardoise-200 p-5 text-left">
           <Row label="Action"     value={info.label} />
           <Row label="Assistante" value={state.userName ?? "—"} />
@@ -79,7 +79,7 @@ export default function ClockButton({ action }: { action: string }) {
 
   return (
     <div className="space-y-6 text-center">
-      <h1 className="font-serif text-2xl italic text-ardoise-900">{info.label}</h1>
+      <h1 className="modal-title">{info.label}</h1>
       <p className="text-sm text-ardoise-500">
         Appuyez sur le bouton ci-dessous pour enregistrer ce pointage maintenant.
         L&apos;heure est celle du serveur.

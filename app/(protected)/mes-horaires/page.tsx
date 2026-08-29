@@ -27,7 +27,7 @@ export default async function MesHorairesPage({
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <SectionLabel>Agenda</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Mon agenda</h1>
+        <h1 className="mt-3 page-title">Mon agenda</h1>
         <p className="mt-2 text-sm text-ardoise-500">Vos horaires prévus, vos congés et vos heures pointées.</p>
       </div>
 

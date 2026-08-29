@@ -48,7 +48,7 @@ export default function MonthAgenda({
     <div className="card p-4 sm:p-5">
       <div className="mb-4 flex items-center justify-between">
         <Link href={prevHref} className="btn-secondary px-3 py-1.5 text-sm" aria-label="Mois précédent">←</Link>
-        <h2 className="font-serif text-xl italic text-ardoise-900">{MONTHS[month - 1]} {year}</h2>
+        <h2 className="section-title">{MONTHS[month - 1]} {year}</h2>
         <Link href={nextHref} className="btn-secondary px-3 py-1.5 text-sm" aria-label="Mois suivant">→</Link>
       </div>
 

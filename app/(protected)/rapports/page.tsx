@@ -11,7 +11,7 @@ export default async function RapportsPage() {
     <div className="max-w-2xl space-y-8">
       <div>
         <SectionLabel>Rapports</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Rapports &amp; exports</h1>
+        <h1 className="mt-3 page-title">Rapports &amp; exports</h1>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Link href="/rapports/pdf" className="card transition-colors hover:border-faraday-300">

@@ -40,7 +40,7 @@ export default function HoursGauge({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-serif text-2xl italic text-ardoise-900">{worked.toFixed(0)} h</span>
+          <span className="text-2xl font-semibold tracking-tight text-ardoise-900">{worked.toFixed(0)} h</span>
           <span className="text-[10px] uppercase tracking-wide text-ardoise-400">sur {target.toFixed(0)} h prévues</span>
         </div>
       </div>

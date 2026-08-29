@@ -54,7 +54,7 @@ export default async function EspacePraticienPage() {
     <div className="space-y-8">
       <div>
         <SectionLabel>Praticien</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Mon espace praticien</h1>
+        <h1 className="mt-3 page-title">Mon espace praticien</h1>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

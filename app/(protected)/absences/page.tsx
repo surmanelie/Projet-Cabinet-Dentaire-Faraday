@@ -56,7 +56,7 @@ export default async function AbsencesPage() {
       <div className="mx-auto max-w-2xl space-y-6">
         <div>
           <SectionLabel>Absences</SectionLabel>
-          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Congés à valider</h1>
+          <h1 className="mt-3 page-title">Congés à valider</h1>
         </div>
         <div className="card">
           <ul className="space-y-3 text-sm">
@@ -83,7 +83,7 @@ export default async function AbsencesPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <SectionLabel>Absences</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Mes congés</h1>
+        <h1 className="mt-3 page-title">Mes congés</h1>
       </div>
       <div className="card">
         <p className="mb-4 text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Demander un congé</p>

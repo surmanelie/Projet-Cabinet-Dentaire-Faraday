@@ -35,7 +35,7 @@ export default function SmartClock() {
             <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h1 className="font-serif text-2xl italic text-ardoise-900">Pointage enregistré</h1>
+        <h1 className="modal-title">Pointage enregistré</h1>
         <div className="space-y-2.5 rounded border border-ardoise-200 p-5 text-left">
           <Row label="Employé" value={clock.userName ?? "—"} />
           <Row label="Action" value={clock.action ? ACTION_LABELS[clock.action] : "—"} />
@@ -61,7 +61,7 @@ export default function SmartClock() {
       <div className="space-y-6 text-center">
         <div>
           <p className="text-xs uppercase tracking-wider2 text-ardoise-400">Bonjour</p>
-          <h1 className="mt-1 font-serif text-2xl italic text-ardoise-900">{status.userName}</h1>
+          <h1 className="mt-1 modal-title">{status.userName}</h1>
           <p className="mt-1.5 text-sm text-ardoise-500">{STATUS_MESSAGE[status.status ?? ""] ?? ""}</p>
         </div>
 
@@ -102,7 +102,7 @@ export default function SmartClock() {
   return (
     <div className="space-y-6 text-center">
       <div>
-        <h1 className="font-serif text-2xl italic text-ardoise-900">Pointage</h1>
+        <h1 className="modal-title">Pointage</h1>
         <p className="mt-1 text-sm text-ardoise-500">Entrez votre code personnel à 4 chiffres.</p>
       </div>
 

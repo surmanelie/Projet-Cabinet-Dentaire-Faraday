@@ -103,7 +103,7 @@ export default async function AidePage() {
     <div className="space-y-8">
       <div>
         <SectionLabel>Assistance</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Aide &amp; mode d&apos;emploi</h1>
+        <h1 className="mt-3 page-title">Aide &amp; mode d&apos;emploi</h1>
         <p className="mt-2 text-sm text-ardoise-500">
           Guide adapté à ton rôle ({ROLE_LABELS[role] ?? role}) pour utiliser FaradayBoard.
         </p>

@@ -38,12 +38,12 @@ export default async function DashboardPage() {
     <div className="space-y-10">
       <div>
         <SectionLabel>{today.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Tableau de bord</h1>
+        <h1 className="mt-3 page-title">Tableau de bord</h1>
       </div>
 
       {activeAssistants === 0 && (
         <div className="rounded-md border border-faraday-300 bg-faraday-50 p-6">
-          <h2 className="font-serif text-xl italic text-faraday-800">Bienvenue — configurons votre cabinet</h2>
+          <h2 className="section-title text-faraday-800">Bienvenue — configurons votre cabinet</h2>
           <ol className="mt-4 space-y-1.5 text-sm text-faraday-800">
             <li>1. Ajoutez un employé (nom, identifiant, mot de passe).</li>
             <li>2. Donnez-lui un code de pointage à 4 chiffres.</li>
