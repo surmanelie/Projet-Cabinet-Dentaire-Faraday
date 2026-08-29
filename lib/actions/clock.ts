@@ -101,9 +101,8 @@ function validateTransition(
       if (lastAction === "DEBUT_JOURNEE" || lastAction === "DEBUT_PAUSE" || lastAction === "FIN_PAUSE") {
         return "Vous avez déjà commencé votre journée.";
       }
-      if (lastAction === "FIN_JOURNEE") {
-        return "Votre journée est déjà terminée.";
-      }
+      // lastAction === "FIN_JOURNEE" est autorisé : une nouvelle session
+      // commence (ex: coupure méridienne pointée comme fin/reprise).
       return null;
 
     case "DEBUT_PAUSE":
