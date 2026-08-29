@@ -24,7 +24,7 @@ export default async function LoginPage({
         />
         <SectionLabel tone="inverted">Espace privé</SectionLabel>
         <div>
-          <p className="font-serif text-[clamp(2.5rem,4vw,4rem)] italic leading-[1.05] text-creme-50">
+          <p className="font-semibold tracking-tight text-[clamp(2.5rem,4vw,4rem)] leading-[1.05] text-creme-50">
             La précision,
             <br />
             au quotidien.
@@ -46,10 +46,10 @@ export default async function LoginPage({
             <div className="mb-4">
               <LogoMark size={48} />
             </div>
-            <h1 className="font-serif text-2xl italic text-ardoise-900">Surmaly</h1>
+            <h1 className="modal-title">Surmaly</h1>
           </div>
 
-          <h2 className="hidden font-serif text-3xl italic text-ardoise-900 md:block">
+          <h2 className="hidden section-title md:block">
             Connexion
           </h2>
           <p className="mb-8 mt-2 hidden text-sm text-ardoise-500 md:block">

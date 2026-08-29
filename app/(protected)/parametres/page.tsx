@@ -17,7 +17,7 @@ export default async function ParametresPage() {
       <div className="flex items-end justify-between">
         <div>
           <SectionLabel>Paramètres</SectionLabel>
-          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Paramètres du cabinet</h1>
+          <h1 className="mt-3 page-title">Paramètres du cabinet</h1>
         </div>
         <div className="flex gap-3 text-sm">
           <Link href="/parametres/regles" className="text-faraday-700 hover:underline">Règles de calcul</Link>

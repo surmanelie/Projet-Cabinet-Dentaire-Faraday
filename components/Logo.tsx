@@ -35,7 +35,7 @@ export default function Logo({
       <LogoMark size={size} />
       {showName && (
         <div className="leading-tight">
-          <p className="font-serif text-lg italic tracking-tight text-ardoise-900">Surmaly</p>
+          <p className="font-semibold tracking-tight text-lg text-ardoise-900">Surmaly</p>
           {subtitle && (
             <p className="text-[10px] font-medium uppercase tracking-wider2 text-ardoise-400">
               {subtitle}

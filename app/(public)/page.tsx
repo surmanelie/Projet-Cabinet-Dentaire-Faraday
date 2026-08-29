@@ -41,7 +41,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-6">
           <Reveal className="md:col-span-8 md:col-start-1">
             <SectionLabel index="01">Gestion du temps</SectionLabel>
-            <h1 className="mt-6 font-serif text-[clamp(3rem,7vw,7rem)] italic leading-[0.98] tracking-tight text-ardoise-900">
+            <h1 className="mt-6 font-semibold tracking-tight text-[clamp(3rem,7vw,7rem)] leading-[0.98] text-ardoise-900">
               La précision,
               <br />
               au service du soin.
@@ -82,7 +82,7 @@ export default function LandingPage() {
               delay={i * 0.1}
               className={`border-ardoise-200 pt-8 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0 ${i === 0 ? "md:pl-0" : ""}`}
             >
-              <span className="font-serif text-2xl italic text-faraday-400">{v.n}</span>
+              <span className="font-semibold tracking-tight text-2xl text-faraday-400">{v.n}</span>
               <h3 className="mt-3 text-base font-medium text-ardoise-900">{v.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-ardoise-600">{v.text}</p>
             </Reveal>
@@ -95,7 +95,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-8">
           <Reveal className="md:col-span-5">
             <SectionLabel index="03">Fonctionnement</SectionLabel>
-            <h2 className="mt-6 font-serif text-4xl italic leading-tight text-ardoise-900 md:text-5xl">
+            <h2 className="mt-6 font-semibold tracking-tight text-4xl leading-tight text-ardoise-900 md:text-5xl">
               Trois gestes,
               <br />
               un mois maîtrisé.
@@ -106,7 +106,7 @@ export default function LandingPage() {
             <ul className="space-y-0 divide-y divide-ardoise-200 border-t border-ardoise-200">
               {STEPS.map((s, i) => (
                 <Reveal key={s.n} delay={i * 0.1} as="li" className="flex items-baseline gap-6 py-6">
-                  <span className="font-serif text-xl italic text-faraday-400">{s.n}</span>
+                  <span className="font-semibold tracking-tight text-xl text-faraday-400">{s.n}</span>
                   <div>
                     <p className="text-sm font-medium uppercase tracking-wide text-ardoise-900">
                       {s.title}
@@ -123,7 +123,7 @@ export default function LandingPage() {
       {/* ── CTA final ── */}
       <section className="px-6 pb-24 md:px-12">
         <Reveal className="mx-auto max-w-content overflow-hidden rounded-md bg-faraday-700 px-8 py-16 text-center md:px-16 md:py-24">
-          <p className="font-serif text-[clamp(2rem,4.5vw,4rem)] italic leading-tight text-creme-50">
+          <p className="font-semibold tracking-tight text-[clamp(2rem,4.5vw,4rem)] leading-tight text-creme-50">
             Prêt à simplifier
             <br />
             la gestion de votre équipe&nbsp;?

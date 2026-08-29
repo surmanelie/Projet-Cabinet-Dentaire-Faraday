@@ -47,7 +47,7 @@ export default async function AdminPointagePage() {
     <div className="space-y-8">
       <div>
         <SectionLabel>Pointage</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Suivi en temps réel</h1>
+        <h1 className="mt-3 page-title">Suivi en temps réel</h1>
         <p className="mt-2 text-sm text-ardoise-500">
           Affichez ou imprimez le QR de pointage. Consultez le statut des assistantes.
         </p>
@@ -126,7 +126,7 @@ export default async function AdminPointagePage() {
 function StatTile({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="card text-center">
-      <p className={`font-serif text-3xl font-medium ${color}`}>{value}</p>
+      <p className={`text-3xl font-medium tracking-tight ${color}`}>{value}</p>
       <p className="mt-1.5 text-[11px] uppercase tracking-wide text-ardoise-400">{label}</p>
     </div>
   );

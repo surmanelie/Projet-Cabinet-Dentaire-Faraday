@@ -57,7 +57,7 @@ export default async function MonthlyValidationsPage({
     <div className="space-y-8">
       <div>
         <SectionLabel>Validations</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">
+        <h1 className="mt-3 page-title">
           Validations mensuelles — {month}/{year}
         </h1>
       </div>

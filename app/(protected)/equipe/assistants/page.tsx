@@ -32,7 +32,7 @@ export default async function AssistantsPage() {
     <div className="space-y-8">
       <div>
         <SectionLabel>Équipe</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Assistantes</h1>
+        <h1 className="mt-3 page-title">Assistantes</h1>
       </div>
 
       {isAdminOrRh && (
@@ -47,7 +47,7 @@ export default async function AssistantsPage() {
           <div key={a.id} className="card">
             <div className="flex items-center gap-2">
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: a.color }} />
-              <Link href={`/planning?user=${a.id}`} className="font-serif text-lg italic text-ardoise-900 hover:text-faraday-700 hover:underline">
+              <Link href={`/planning?user=${a.id}`} className="font-semibold tracking-tight text-ardoise-900 hover:text-faraday-700 hover:underline">
                 {a.firstName} {a.lastName}
               </Link>
               {!a.active && <span className="badge bg-ardoise-100 text-ardoise-500">Inactif</span>}

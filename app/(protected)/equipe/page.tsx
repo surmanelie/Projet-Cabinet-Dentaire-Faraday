@@ -29,7 +29,7 @@ export default async function EquipePage() {
       <div className="flex items-end justify-between">
         <div>
           <SectionLabel>Équipe</SectionLabel>
-          <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Employés</h1>
+          <h1 className="mt-3 page-title">Employés</h1>
         </div>
         <Link href="/equipe/heures" className="btn-ghost">
           Suivi des heures <span aria-hidden="true">→</span>

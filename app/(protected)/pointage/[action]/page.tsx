@@ -35,7 +35,7 @@ export default async function PointagePage({
           <ClockButton action={action} />
         ) : (
           <div className="space-y-3 text-center">
-            <p className="font-serif text-2xl italic text-ardoise-900">QR code invalide</p>
+            <p className="modal-title">QR code invalide</p>
             <p className="text-sm text-ardoise-500">
               Contactez l&apos;administrateur pour obtenir un nouveau QR code.
             </p>

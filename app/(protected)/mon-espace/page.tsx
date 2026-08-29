@@ -93,7 +93,7 @@ export default async function MonEspacePage() {
     <div className="mx-auto max-w-xl space-y-6">
       <div>
         <SectionLabel>{now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Bonjour {session.firstName}</h1>
+        <h1 className="mt-3 page-title">Bonjour {session.firstName}</h1>
       </div>
 
       {/* Statut + pointage */}
@@ -143,7 +143,7 @@ export default async function MonEspacePage() {
 function Tile({ label, value }: { label: string; value: string }) {
   return (
     <div className="card text-center">
-      <p className="font-serif text-xl italic text-ardoise-900">{value}</p>
+      <p className="section-title">{value}</p>
       <p className="mt-0.5 text-xs text-ardoise-400">{label}</p>
     </div>
   );

@@ -19,7 +19,7 @@ export default async function ChangerMotDePassePage() {
           <div className="mx-auto mb-4 flex justify-center">
             <LogoMark size={44} />
           </div>
-          <h1 className="font-serif text-2xl italic text-ardoise-900">Choisissez votre mot de passe</h1>
+          <h1 className="modal-title">Choisissez votre mot de passe</h1>
           <p className="mt-1.5 text-sm text-ardoise-500">
             Pour votre sécurité, personnalisez le mot de passe initial avant de continuer.
           </p>

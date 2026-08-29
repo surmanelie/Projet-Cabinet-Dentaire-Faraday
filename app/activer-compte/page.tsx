@@ -15,7 +15,7 @@ export default async function ActiverComptePage({
           <div className="mx-auto mb-4 flex justify-center">
             <LogoMark size={44} />
           </div>
-          <h1 className="font-serif text-2xl italic text-ardoise-900">Activation du compte</h1>
+          <h1 className="modal-title">Activation du compte</h1>
           <p className="mt-1.5 text-sm text-ardoise-500">Choisissez votre mot de passe pour continuer.</p>
         </div>
         <div className="card">

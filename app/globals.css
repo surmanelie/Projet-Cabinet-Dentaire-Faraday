@@ -30,13 +30,24 @@ body {
 
 @layer base {
   h1, h2, h3, h4 {
-    font-family: var(--font-serif), Georgia, serif;
     letter-spacing: -0.01em;
-    font-weight: 500;
   }
 }
 
 @layer components {
+  /* Échelle de titres unique (une seule police partout — Manrope) : la
+     hiérarchie se fait uniquement par taille/graisse/espacement, jamais
+     par un changement de police ou un style italique. */
+  .page-title {
+    @apply text-3xl font-semibold tracking-tight text-ardoise-900 sm:text-4xl;
+  }
+  .section-title {
+    @apply text-lg font-semibold tracking-tight text-ardoise-900 sm:text-xl;
+  }
+  .modal-title {
+    @apply text-xl font-semibold tracking-tight text-ardoise-900 sm:text-2xl;
+  }
+
   /* Micro-label capitales espacées : motif signature réutilisé partout
      à la place d'une illustration explicite (numéro de section, statut...). */
   .eyebrow {

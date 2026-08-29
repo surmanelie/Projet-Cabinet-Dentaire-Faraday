@@ -32,7 +32,7 @@ export default async function AuditPage({
     <div className="space-y-8">
       <div>
         <SectionLabel>Audit</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Journal d&apos;audit</h1>
+        <h1 className="mt-3 page-title">Journal d&apos;audit</h1>
         <p className="mt-2 text-sm text-ardoise-500">
           Toutes les actions sensibles (création/modification de comptes, corrections d&apos;horaires, validations,
           sauvegardes...) sont tracées ici avec l&apos;auteur, l&apos;horodatage et les valeurs avant/après.

@@ -30,7 +30,7 @@ export default async function MessagesPage({
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <SectionLabel>Échanges</SectionLabel>
-        <h1 className="mt-3 font-serif text-4xl italic text-ardoise-900">Messagerie</h1>
+        <h1 className="mt-3 page-title">Messagerie</h1>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -75,7 +75,7 @@ export default async function MessagesPage({
           {active ? (
             <>
               <div className="mb-3 border-b border-ardoise-100 pb-3">
-                <p className="font-serif text-lg italic text-ardoise-900">{active.firstName} {active.lastName}</p>
+                <p className="font-semibold tracking-tight text-ardoise-900">{active.firstName} {active.lastName}</p>
                 <p className="text-xs text-ardoise-400">{ROLE_LABELS[active.role] ?? active.role}</p>
               </div>
 
