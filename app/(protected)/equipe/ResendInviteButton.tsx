@@ -26,12 +26,17 @@ export default function ResendInviteButton({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="inline-flex flex-col items-start gap-1">
-      <button className="btn-secondary text-xs" onClick={handleClick} disabled={pending}>
+    <div className="flex flex-col items-stretch gap-1">
+      <button
+        role="menuitem"
+        className="w-full rounded px-3 py-2 text-left text-sm text-ardoise-800 transition-colors duration-200 ease-premium hover:bg-ardoise-50 disabled:opacity-50"
+        onClick={handleClick}
+        disabled={pending}
+      >
         {pending ? "Envoi..." : "Renvoyer l'invitation"}
       </button>
       {result && (
-        <p className="max-w-xs text-xs text-ardoise-500">
+        <p className="px-3 text-xs text-ardoise-500">
           {result.emailSent ? (
             "Email envoyé."
           ) : (

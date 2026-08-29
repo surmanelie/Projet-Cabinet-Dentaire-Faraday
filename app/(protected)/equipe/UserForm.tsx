@@ -60,8 +60,9 @@ export default function UserForm({
     setClockPin(String(Math.floor(1000 + Math.random() * 9000)));
   }
 
-  // Ferme le modal en édition dès que la sauvegarde réussit.
-  if (isEdit && state.success && onDone) {
+  // Ferme le modal (création ou édition) dès que la sauvegarde réussit,
+  // en laissant le message de confirmation s'afficher brièvement.
+  if (state.success && onDone) {
     setTimeout(onDone, 400);
   }
 

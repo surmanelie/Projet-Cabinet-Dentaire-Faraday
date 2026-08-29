@@ -31,27 +31,38 @@ export default function DeleteUserButton({
 
   if (confirming) {
     return (
-      <span className="inline-flex items-center gap-1">
-        <button className="btn-danger text-xs" disabled={pending} onClick={handleDelete}>
-          {pending ? "Suppression…" : "Confirmer"}
+      <div className="flex items-stretch gap-1">
+        <button
+          role="menuitem"
+          className="flex-1 rounded px-3 py-2 text-left text-sm font-medium text-red-700 transition-colors duration-200 ease-premium hover:bg-red-50 disabled:opacity-50"
+          disabled={pending}
+          onClick={handleDelete}
+        >
+          {pending ? "Suppression…" : "Confirmer la suppression"}
         </button>
-        <button className="btn-secondary text-xs" disabled={pending} onClick={() => setConfirming(false)}>
+        <button
+          role="menuitem"
+          className="rounded px-3 py-2 text-sm text-ardoise-600 transition-colors duration-200 ease-premium hover:bg-ardoise-50 disabled:opacity-50"
+          disabled={pending}
+          onClick={() => setConfirming(false)}
+        >
           Annuler
         </button>
-      </span>
+      </div>
     );
   }
 
   return (
-    <span className="inline-flex flex-col gap-1">
+    <div className="flex flex-col items-stretch gap-1">
       <button
-        className="btn-danger text-xs"
+        role="menuitem"
+        className="w-full rounded px-3 py-2 text-left text-sm text-red-700 transition-colors duration-200 ease-premium hover:bg-red-50"
         onClick={() => setConfirming(true)}
         title={`Supprimer ${userName}`}
       >
         Supprimer
       </button>
-      {error && <span className="text-xs text-red-600">{error}</span>}
-    </span>
+      {error && <span className="px-3 text-xs text-red-600">{error}</span>}
+    </div>
   );
 }
