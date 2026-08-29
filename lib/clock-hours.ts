@@ -28,7 +28,12 @@ export const ALLOWED_BY_STATUS: Record<ClockStatus, ClockEvent["action"][]> = {
   ABSENT: ["DEBUT_JOURNEE"],
   PRESENT: ["DEBUT_PAUSE", "FIN_JOURNEE"],
   EN_PAUSE: ["FIN_PAUSE"],
-  JOURNEE_TERMINEE: [],
+  // Une journée "terminée" peut toujours redémarrer : une même journée peut
+  // contenir plusieurs sessions de travail (ex: erreur de pointage, coupure
+  // méridienne pointée comme fin/reprise plutôt que pause). Voir
+  // deriveDayFromClock ci-dessous pour le calcul du temps travaillé qui en
+  // tient compte.
+  JOURNEE_TERMINEE: ["DEBUT_JOURNEE"],
 };
 
 export type DerivedDay = {
@@ -51,13 +56,23 @@ function toHHMM(d: Date): string {
 /**
  * Transforme les pointages d'UNE journée en heures de début/fin + pauses.
  *
+ * Une journée peut contenir plusieurs sessions de travail (ex: 08:30→12:30
+ * puis 13:30→18:00, ou une fin de journée pointée par erreur suivie d'une
+ * reprise). `actualStart`/`actualEnd` restent le premier début et le
+ * dernier fin de la journée ; tout ce qui se passe ENTRE deux sessions
+ * (FIN_JOURNEE → DEBUT_JOURNEE suivant) est exclu du temps travaillé
+ * exactement comme une pause (DEBUT_PAUSE → FIN_PAUSE) — les deux types de
+ * coupure sont donc traités par la même logique de paires.
+ *
  * Règles de robustesse (des pointages incohérents ne doivent jamais faire
  * planter le calcul) :
  * - `actualStart` = timestamp du premier DEBUT_JOURNEE.
  * - `actualEnd`   = timestamp du dernier FIN_JOURNEE.
- * - Les pauses sont comptées par paires DEBUT_PAUSE → FIN_PAUSE ; une pause
- *   ouverte mais non refermée est ignorée (durée inconnue, non déduite).
- * - Une pause à cheval négatif (fin avant début) est ignorée.
+ * - Les coupures (pauses ET écarts inter-sessions) sont comptées par paires
+ *   "début de coupure" → "fin de coupure" ; une coupure ouverte mais non
+ *   refermée est ignorée (durée inconnue, non déduite) — c'est le cas
+ *   normal de la coupure finale après le dernier FIN_JOURNEE.
+ * - Une coupure à cheval négatif (fin avant début) est ignorée.
  */
 export function deriveDayFromClock(events: ClockEvent[]): DerivedDay {
   const sorted = [...events].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -66,14 +81,14 @@ export function deriveDayFromClock(events: ClockEvent[]): DerivedDay {
   const lastEnd = [...sorted].reverse().find((e) => e.action === "FIN_JOURNEE");
 
   let breakMinutes = 0;
-  let pauseStart: Date | null = null;
+  let gapStart: Date | null = null;
   for (const e of sorted) {
-    if (e.action === "DEBUT_PAUSE") {
-      pauseStart = e.timestamp;
-    } else if (e.action === "FIN_PAUSE" && pauseStart) {
-      const diff = (e.timestamp.getTime() - pauseStart.getTime()) / 60000;
+    if (e.action === "DEBUT_PAUSE" || e.action === "FIN_JOURNEE") {
+      gapStart = e.timestamp;
+    } else if ((e.action === "FIN_PAUSE" || e.action === "DEBUT_JOURNEE") && gapStart) {
+      const diff = (e.timestamp.getTime() - gapStart.getTime()) / 60000;
       if (diff > 0) breakMinutes += diff;
-      pauseStart = null;
+      gapStart = null;
     }
   }
 

@@ -15,7 +15,7 @@ const STATUS_MESSAGE: Record<string, string> = {
   ABSENT: "Vous n'avez pas encore commencé votre journée.",
   PRESENT: "Vous êtes en poste.",
   EN_PAUSE: "Vous êtes en pause.",
-  JOURNEE_TERMINEE: "Votre journée est déjà terminée.",
+  JOURNEE_TERMINEE: "Dernière session terminée — vous pouvez en commencer une nouvelle si besoin.",
 };
 
 const initialStatus: PinStatusResult = {};
