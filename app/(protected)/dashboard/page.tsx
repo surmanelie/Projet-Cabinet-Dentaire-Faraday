@@ -3,12 +3,18 @@ import { prisma } from "@/lib/prisma";
 import StatCard from "@/components/StatCard";
 import SectionLabel from "@/components/SectionLabel";
 import Link from "next/link";
+import { getAgendaData } from "@/lib/agenda";
+import { computeProgrammedMinutesForMonth } from "@/lib/hours-engine";
+
+const WEEKS_PER_MONTH = 4.33;
 
 export default async function DashboardPage() {
   const today = new Date();
   const todayStart = startOfDay(today);
   const todayEnd = endOfDay(today);
   const in30Days = addDays(today, 30);
+  const month = today.getMonth() + 1;
+  const year = today.getFullYear();
 
   const [
     activeAssistants,
@@ -18,6 +24,7 @@ export default async function DashboardPage() {
     upcomingLeaves,
     unvalidatedEntries,
     pendingMonthly,
+    assistants,
   ] = await Promise.all([
     prisma.user.count({ where: { role: "ASSISTANT", active: true } }),
     prisma.user.count({ where: { role: "PRATICIEN", active: true } }),
@@ -32,7 +39,31 @@ export default async function DashboardPage() {
     }),
     prisma.workEntry.count({ where: { status: { in: ["A_VALIDER", "MODIFIE"] } } }),
     prisma.monthlyValidation.count({ where: { status: { in: ["EN_PREPARATION", "ENVOYE_AU_SALARIE", "REFUSE_SALARIE"] } } }),
+    prisma.user.findMany({
+      where: { role: "ASSISTANT", active: true },
+      select: { id: true, firstName: true, lastName: true, assistantProfile: { select: { weeklyContractHours: true } } },
+      orderBy: { lastName: "asc" },
+    }),
   ]);
+
+  // Synthèse compacte : heures prévues (contrat) vs. déjà programmées ce
+  // mois pour chaque assistante — pas les heures réellement pointées (ça,
+  // c'est le rôle du Suivi des heures / export PDF).
+  const hoursSummary = await Promise.all(
+    assistants.map(async (a) => {
+      const { templatesByDow, entriesByDate } = await getAgendaData(a.id, year, month);
+      const programmedHours = computeProgrammedMinutesForMonth(templatesByDow, entriesByDate, year, month) / 60;
+      const contractHours = a.assistantProfile?.weeklyContractHours ?? 35;
+      const contractMonthlyHours = contractHours * WEEKS_PER_MONTH;
+      return {
+        id: a.id,
+        name: `${a.firstName} ${a.lastName}`,
+        contractHours,
+        programmedHours,
+        remainingHours: contractMonthlyHours - programmedHours,
+      };
+    })
+  );
 
   return (
     <div className="space-y-10">
@@ -65,6 +96,33 @@ export default async function DashboardPage() {
         <StatCard label="Heures non validées" value={unvalidatedEntries} tone={unvalidatedEntries > 0 ? "warning" : "default"} />
         <StatCard label="Validations mensuelles en attente" value={pendingMonthly} tone={pendingMonthly > 0 ? "danger" : "default"} />
       </div>
+
+      {hoursSummary.length > 0 && (
+        <div className="card">
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Heures programmées ce mois</p>
+            <Link href="/equipe/heures" className="text-xs font-medium text-faraday-700 hover:underline">
+              Suivi détaillé →
+            </Link>
+          </div>
+          <div className="divide-y divide-ardoise-100">
+            {hoursSummary.map((h) => (
+              <div key={h.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5 text-sm">
+                <span className="font-medium text-ardoise-900">{h.name}</span>
+                <div className="flex items-center gap-4 text-xs sm:text-sm">
+                  <span className="text-ardoise-400">{h.contractHours} h/sem prévues</span>
+                  <span className="text-ardoise-600">{h.programmedHours.toFixed(1)} h programmées</span>
+                  <span className={h.remainingHours >= 0 ? "font-medium text-ardoise-500" : "font-medium text-amber-700"}>
+                    {h.remainingHours >= 0
+                      ? `${h.remainingHours.toFixed(1)} h reste à programmer`
+                      : `+${Math.abs(h.remainingHours).toFixed(1)} h supp.`}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="card">
