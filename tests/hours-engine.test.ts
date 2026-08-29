@@ -4,6 +4,8 @@ import {
   computeFullTimeWeek,
   computePartTimeWeek,
   computeMonthlySummary,
+  computeProgrammedMinutesForDay,
+  computeProgrammedMinutesForMonth,
   roundMinutes,
   DEFAULT_RULES,
 } from "@/lib/hours-engine";
@@ -152,5 +154,84 @@ describe("computeMonthlySummary", () => {
     });
     expect(summary.deficitHours).toBeCloseTo(summary.totalPlannedHours, 1);
     expect(summary.deficitHours).toBeCloseTo(-summary.balanceHours, 1);
+  });
+});
+
+describe("6 cas obligatoires — heures programmées (planning) vs contrat vs pointage réel", () => {
+  const YEAR = 2026;
+  const MONTH = 1; // janvier 2026
+
+  it("cas 1 — planning inférieur au contrat : il reste des heures à programmer", () => {
+    const weekdaysTemplate = {
+      1: { startTime: "09:00", endTime: "13:00" }, // 4h/jour, lundi à vendredi
+      2: { startTime: "09:00", endTime: "13:00" },
+      3: { startTime: "09:00", endTime: "13:00" },
+      4: { startTime: "09:00", endTime: "13:00" },
+      5: { startTime: "09:00", endTime: "13:00" },
+    };
+    const programmedMinutes = computeProgrammedMinutesForMonth(weekdaysTemplate, {}, YEAR, MONTH);
+    const contractMonthlyMinutes = 35 * 4.33 * 60; // contrat 35h/semaine
+    expect(programmedMinutes).toBeLessThan(contractMonthlyMinutes);
+  });
+
+  it("cas 2 — planning égal au contrat du jour : reste à programmer nul", () => {
+    const programmedMinutes = computeProgrammedMinutesForDay({}, { plannedStart: "09:00", plannedEnd: "17:00" }, 1);
+    const contractDayMinutes = 8 * 60;
+    expect(programmedMinutes).toBe(contractDayMinutes);
+    expect(programmedMinutes - contractDayMinutes).toBe(0);
+  });
+
+  it("cas 3 — planning supérieur au contrat du jour : heures supplémentaires programmées", () => {
+    const programmedMinutes = computeProgrammedMinutesForDay({}, { plannedStart: "08:00", plannedEnd: "18:00" }, 1);
+    const contractDayMinutes = 8 * 60;
+    expect(programmedMinutes - contractDayMinutes).toBe(120); // +2h supp. programmées
+  });
+
+  it("cas 4 — ajout d'heures sur plusieurs jours à la fois : le total augmente exactement de la somme ajoutée", () => {
+    const before = computeProgrammedMinutesForMonth({}, {}, YEAR, MONTH);
+    const entriesAfter = {
+      "2026-01-05": { plannedStart: "09:00", plannedEnd: "17:00" }, // +8h
+      "2026-01-06": { plannedStart: "09:00", plannedEnd: "17:00" }, // +8h
+      "2026-01-07": { plannedStart: "09:00", plannedEnd: "13:00" }, // +4h
+    };
+    const after = computeProgrammedMinutesForMonth({}, entriesAfter, YEAR, MONTH);
+    expect(before).toBe(0);
+    expect(after - before).toBe((8 + 8 + 4) * 60);
+  });
+
+  it("cas 5 — retrait d'heures sur un jour déjà programmé : le total diminue exactement de la durée retirée", () => {
+    const entriesBefore = {
+      "2026-01-05": { plannedStart: "09:00", plannedEnd: "17:00" }, // 8h
+      "2026-01-06": { plannedStart: "09:00", plannedEnd: "17:00" }, // 8h
+    };
+    const before = computeProgrammedMinutesForMonth({}, entriesBefore, YEAR, MONTH);
+
+    const entriesAfter = {
+      "2026-01-05": { plannedStart: "09:00", plannedEnd: "17:00" },
+      "2026-01-06": { plannedStart: null, plannedEnd: null }, // jour retiré du planning
+    };
+    const after = computeProgrammedMinutesForMonth({}, entriesAfter, YEAR, MONTH);
+
+    expect(before).toBe(16 * 60);
+    expect(after).toBe(8 * 60);
+    expect(before - after).toBe(8 * 60);
+  });
+
+  it("cas 6 — écart planning vs pointage réel : les deux écarts restent distincts, jamais fusionnés", () => {
+    // Contrat 35h/semaine. Le planning programme 38h (+3h). Le pointage réel
+    // n'enregistre que 36h effectivement travaillées (+1h). Les deux
+    // dépassements doivent rester deux nombres séparés, jamais confondus
+    // l'un avec l'autre ni avec un seul total générique.
+    const contractWeekHours = 35;
+
+    const programmed = computeFullTimeWeek(38, contractWeekHours, DEFAULT_RULES);
+    const programmedOvertimeHours = programmed.overtimeTier1Hours + programmed.overtimeTier2Hours;
+    expect(programmedOvertimeHours).toBeCloseTo(3);
+
+    const actual = computeFullTimeWeek(36, contractWeekHours, DEFAULT_RULES);
+    const actualOvertimeHours = actual.overtimeTier1Hours + actual.overtimeTier2Hours;
+    expect(actualOvertimeHours).toBeCloseTo(1);
+
+    expect(programmedOvertimeHours).not.toBeCloseTo(actualOvertimeHours);
   });
 });

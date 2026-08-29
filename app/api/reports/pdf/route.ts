@@ -4,7 +4,8 @@ import { getSession } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
 import { generateEmployeeRecapPdf, generateGlobalAccountingPdf } from "@/lib/pdf";
-import { getCabinetSettings } from "@/lib/rules";
+import { getCabinetSettings, getRulesConfig } from "@/lib/rules";
+import { computeDayMinutes } from "@/lib/hours-engine";
 import { writeAuditLog } from "@/lib/audit";
 
 export async function GET(req: Request) {
@@ -71,6 +72,28 @@ export async function GET(req: Request) {
   });
 
   const summary = await computeMonthlyRecap(targetUserId, month, year);
+
+  // Détail jour par jour des heures RÉELLEMENT pointées (jamais le planning
+  // théorique) — dates, horaires réels, pause, total du jour — exigé sur le
+  // PDF individuel en plus du récapitulatif agrégé.
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 0, 23, 59, 59);
+  const rules = await getRulesConfig();
+  const workedEntries = await prisma.workEntry.findMany({
+    where: { userId: targetUserId, date: { gte: start, lte: end }, actualStart: { not: null }, actualEnd: { not: null } },
+    orderBy: { date: "asc" },
+  });
+  const dailyEntries = workedEntries.map((e) => ({
+    date: e.date,
+    actualStart: e.actualStart as string,
+    actualEnd: e.actualEnd as string,
+    breakMinutes: e.breakMinutes,
+    totalMinutes: computeDayMinutes(
+      { start: e.actualStart as string, end: e.actualEnd as string, breakMinutes: e.breakMinutes },
+      rules.rounding
+    ),
+  }));
+
   const pdfBuffer = await generateEmployeeRecapPdf({
     cabinetName: settings.name,
     employeeName: `${user.firstName} ${user.lastName}`,
@@ -78,6 +101,7 @@ export async function GET(req: Request) {
     year,
     summary,
     status: validation?.status ?? "EN_PREPARATION",
+    dailyEntries,
   });
 
   await writeAuditLog({

@@ -2,6 +2,14 @@ import "server-only";
 import PDFDocument from "pdfkit";
 import type { MonthlySummary } from "@/lib/hours-engine";
 
+type DailyEntry = {
+  date: Date;
+  actualStart: string;
+  actualEnd: string;
+  breakMinutes: number;
+  totalMinutes: number;
+};
+
 type EmployeeRecapData = {
   cabinetName: string;
   employeeName: string;
@@ -9,7 +17,14 @@ type EmployeeRecapData = {
   year: number;
   summary: MonthlySummary;
   status: string;
+  dailyEntries: DailyEntry[];
 };
+
+function formatDayMinutes(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  return `${h}h${String(m).padStart(2, "0")}`;
+}
 
 const MONTHS_FR = [
   "janvier", "février", "mars", "avril", "mai", "juin",
@@ -50,6 +65,38 @@ export function generateEmployeeRecapPdf(data: EmployeeRecapData): Promise<Buffe
       doc.text(label, { continued: true, width: 350 });
       doc.text(value, { align: "right" });
     });
+
+    doc.moveDown(1.5);
+
+    // Détail jour par jour des heures RÉELLEMENT pointées (jamais le
+    // planning théorique) : date, horaires réels, pause, total du jour.
+    doc.fontSize(12).fillColor("#0f172a").text("Détail des jours travaillés (heures réellement pointées)");
+    doc.moveDown(0.5);
+
+    if (data.dailyEntries.length === 0) {
+      doc.fontSize(10).fillColor("#64748b").text("Aucun pointage réel enregistré sur cette période.");
+    } else {
+      const colX = [50, 160, 250, 340, 430];
+      const headers = ["Date", "Début", "Fin", "Pause", "Total du jour"];
+      doc.fontSize(9).fillColor("#475569");
+      headers.forEach((h, i) => doc.text(h, colX[i], doc.y, { width: 100, continued: i < headers.length - 1 }));
+      doc.moveDown(0.3);
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#cbd5e1").stroke();
+      doc.moveDown(0.3);
+
+      doc.fontSize(9).fillColor("#0f172a");
+      for (const entry of data.dailyEntries) {
+        if (doc.y > 720) doc.addPage();
+        const y = doc.y;
+        const dateLabel = entry.date.toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "2-digit" });
+        doc.text(dateLabel, colX[0], y, { width: 100 });
+        doc.text(entry.actualStart, colX[1], y, { width: 80 });
+        doc.text(entry.actualEnd, colX[2], y, { width: 80 });
+        doc.text(`${entry.breakMinutes} min`, colX[3], y, { width: 80 });
+        doc.text(formatDayMinutes(entry.totalMinutes), colX[4], y, { width: 90 });
+        doc.moveDown(0.5);
+      }
+    }
 
     doc.moveDown(2);
     doc.fontSize(9).fillColor("#94a3b8").text(`Document généré le ${new Date().toLocaleString("fr-FR")} — usage interne au cabinet.`);
