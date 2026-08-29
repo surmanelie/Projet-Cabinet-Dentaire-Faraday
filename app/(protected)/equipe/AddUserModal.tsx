@@ -1,20 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import UserForm, { type EditableUser } from "./UserForm";
+import UserForm from "./UserForm";
 
-/** Bouton "Modifier" ouvrant un modal contenant le formulaire d'édition. */
-export default function EditUserModal({ user }: { user: EditableUser }) {
+/** Bouton "+ Ajouter un employé" ouvrant un modal contenant le formulaire de création. */
+export default function AddUserModal() {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <button
-        role="menuitem"
-        className="w-full rounded px-3 py-2 text-left text-sm text-ardoise-800 transition-colors duration-200 ease-premium hover:bg-ardoise-50"
-        onClick={() => setOpen(true)}
-      >
-        Modifier
+      <button className="btn-primary" onClick={() => setOpen(true)}>
+        + Ajouter un employé
       </button>
 
       {open && (
@@ -26,10 +22,8 @@ export default function EditUserModal({ user }: { user: EditableUser }) {
             className="mt-10 w-full max-w-lg rounded-xl bg-white p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-ardoise-900">
-                Modifier {user.firstName} {user.lastName}
-              </h2>
+            <div className="mb-1 flex items-center justify-between">
+              <h2 className="modal-title text-base sm:text-lg">Ajouter un employé</h2>
               <button
                 className="text-ardoise-400 hover:text-ardoise-700"
                 onClick={() => setOpen(false)}
@@ -38,7 +32,11 @@ export default function EditUserModal({ user }: { user: EditableUser }) {
                 ✕
               </button>
             </div>
-            <UserForm user={user} onDone={() => setOpen(false)} />
+            <p className="mb-4 text-xs text-ardoise-500">
+              Définis un mot de passe initial à transmettre à la personne — elle devra le
+              personnaliser à sa première connexion.
+            </p>
+            <UserForm onDone={() => setOpen(false)} />
           </div>
         </div>
       )}
