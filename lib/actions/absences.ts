@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { writeAuditLog, notifyUser } from "@/lib/audit";
 import { isAdminOrRh } from "@/lib/permissions";
+import { startOfParisDay } from "@/lib/timezone";
 import type { AbsenceType } from "@prisma/client";
 
 export type AbsenceFormResult = { error?: string; success?: boolean };
@@ -19,16 +20,19 @@ const ABSENCE_LABELS: Record<string, string> = {
   AUTRE: "Absence",
 };
 
-/** Renvoie tous les jours (à minuit) entre deux dates incluses. */
+/**
+ * Renvoie tous les jours (minuit Paris) entre deux dates incluses — même
+ * convention que `WorkEntry.date` partout ailleurs (pointage, planning),
+ * sinon une même journée calendaire produirait deux valeurs différentes et
+ * dupliquerait la ligne au lieu de la marquer "absence".
+ */
 function eachDay(start: Date, end: Date): Date[] {
   const days: Date[] = [];
-  const d = new Date(start);
-  d.setHours(0, 0, 0, 0);
-  const last = new Date(end);
-  last.setHours(0, 0, 0, 0);
+  let d = startOfParisDay(start);
+  const last = startOfParisDay(end);
   while (d <= last) {
-    days.push(new Date(d));
-    d.setDate(d.getDate() + 1);
+    days.push(d);
+    d = startOfParisDay(new Date(d.getTime() + 25 * 60 * 60 * 1000));
   }
   return days;
 }

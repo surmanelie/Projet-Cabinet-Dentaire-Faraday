@@ -7,6 +7,7 @@ import { computeDayMinutes } from "@/lib/hours-engine";
 import HoursGauge from "@/components/HoursGauge";
 import SectionLabel from "@/components/SectionLabel";
 import MonthlyResponse from "./MonthlyResponse";
+import { startOfParisDay, getParisDayOfWeek, getParisYearMonth, CABINET_TIMEZONE } from "@/lib/timezone";
 
 const STATUS: Record<string, { label: string; dot: string; tone: string }> = {
   ABSENT: { label: "Pas encore pointé", dot: "bg-ardoise-300", tone: "text-ardoise-500" },
@@ -48,12 +49,13 @@ export default async function MonEspacePage() {
   if (!session) return null;
 
   const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = startOfParisDay(now);
 
   // Début de la semaine (lundi)
   const weekStart = new Date(todayStart);
-  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+  weekStart.setDate(weekStart.getDate() - ((getParisDayOfWeek(todayStart) + 6) % 7));
+
+  const { year: currentYear, month: currentMonth } = getParisYearMonth(now);
 
   const [status, todayEntries, weekEntries, monthly] = await Promise.all([
     getClockStatus(session.id),
@@ -62,7 +64,7 @@ export default async function MonEspacePage() {
       where: { userId: session.id, date: { gte: weekStart, lt: todayStart } },
     }),
     prisma.monthlyValidation.findUnique({
-      where: { userId_month_year: { userId: session.id, month: now.getMonth() + 1, year: now.getFullYear() } },
+      where: { userId_month_year: { userId: session.id, month: currentMonth, year: currentYear } },
     }),
   ]);
 
@@ -77,7 +79,7 @@ export default async function MonEspacePage() {
   let monthWorked = 0;
   let monthTarget = 0;
   try {
-    const recap = await computeMonthlyRecap(session.id, now.getMonth() + 1, now.getFullYear());
+    const recap = await computeMonthlyRecap(session.id, currentMonth, currentYear);
     overtime = recap.overtimeHours;
     deficit = recap.deficitHours;
     monthWorked = recap.totalWorkedHours;
@@ -92,7 +94,7 @@ export default async function MonEspacePage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
-        <SectionLabel>{now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</SectionLabel>
+        <SectionLabel>{now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: CABINET_TIMEZONE })}</SectionLabel>
         <h1 className="mt-3 page-title">Bonjour {session.firstName}</h1>
       </div>
 
@@ -103,7 +105,7 @@ export default async function MonEspacePage() {
           <span className={`text-base font-medium ${s.tone}`}>{s.label}</span>
           {arrival && status !== "ABSENT" && (
             <span className="ml-auto text-sm text-ardoise-400">
-              depuis {arrival.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+              depuis {arrival.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: CABINET_TIMEZONE })}
             </span>
           )}
         </div>

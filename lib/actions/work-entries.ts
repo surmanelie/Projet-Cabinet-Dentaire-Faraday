@@ -1,22 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { startOfDay } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { writeAuditLog, notifyUser } from "@/lib/audit";
 import { isAdminOrRh } from "@/lib/permissions";
+import { startOfParisDay, getParisDayOfWeek } from "@/lib/timezone";
+import { dateKey } from "@/lib/agenda";
 
 /** Récupère (ou crée à partir de l'horaire type) l'entrée du jour pour un utilisateur. */
 export async function getOrCreateTodayEntry(userId: string) {
-  const today = startOfDay(new Date());
+  const today = startOfParisDay(new Date());
 
   const existing = await prisma.workEntry.findUnique({
     where: { userId_date: { userId, date: today } },
   });
   if (existing) return existing;
 
-  const dayOfWeek = today.getDay();
+  const dayOfWeek = getParisDayOfWeek(today);
   const template = await prisma.scheduleTemplate.findFirst({
     where: { userId, dayOfWeek, active: true },
   });
@@ -151,18 +152,19 @@ export async function correctEntryAction(
   revalidatePath("/planning");
 }
 
-function pad2(n: number): string {
-  return String(n).padStart(2, "0");
-}
-
+/**
+ * "YYYY-MM-DD" → minuit Paris de ce jour, comme `WorkEntry.date` partout
+ * ailleurs (syncWorkEntryFromClock, getOrCreateTodayEntry) — sinon la même
+ * journée calendaire produirait deux valeurs de `date` différentes (une
+ * UTC-minuit ici, une Paris-minuit côté pointage), dupliquant la ligne au
+ * lieu de la mettre à jour (violation silencieuse de l'intention de la
+ * contrainte unique `userId_date`).
+ */
 function parseDateKey(key: string): Date {
-  const [y, m, d] = key.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  return startOfParisDay(new Date(`${key}T00:00:00`));
 }
 
-function toDateKey(d: Date): string {
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-}
+const toDateKey = dateKey;
 
 export type BulkEditResult = { error?: string; success?: boolean; skippedLocked?: string[] };
 

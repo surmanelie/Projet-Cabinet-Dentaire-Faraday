@@ -47,10 +47,19 @@ export type DerivedDay = {
   complete: boolean;
 };
 
+/**
+ * "HH:MM" en heure de Paris — jamais via les accesseurs locaux de Date
+ * (`getHours`/`getMinutes`), qui dépendent du fuseau du PROCESSUS serveur
+ * (UTC par défaut sur Vercel) et décalaient les heures stockées de 1-2h par
+ * rapport à l'heure réelle du cabinet.
+ */
 function toHHMM(d: Date): string {
-  const h = String(d.getHours()).padStart(2, "0");
-  const m = String(d.getMinutes()).padStart(2, "0");
-  return `${h}:${m}`;
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Paris",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(d);
 }
 
 /**

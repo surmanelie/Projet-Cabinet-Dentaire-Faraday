@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import SectionLabel from "@/components/SectionLabel";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import CorrectEntryForm from "./CorrectEntryForm";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -69,7 +70,7 @@ export default async function ValidationsPage() {
                   <td className="py-3.5 pr-4">
                     {e.user.firstName} {e.user.lastName}
                   </td>
-                  <td className="py-3.5 pr-4">{new Date(e.date).toLocaleDateString("fr-FR")}</td>
+                  <td className="py-3.5 pr-4">{new Date(e.date).toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })}</td>
                   <td className="py-3.5 pr-4 text-ardoise-500">
                     {e.plannedStart ?? "—"}-{e.plannedEnd ?? "—"}
                   </td>

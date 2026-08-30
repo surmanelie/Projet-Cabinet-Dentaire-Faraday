@@ -2,6 +2,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminOrRh } from "@/lib/permissions";
 import SectionLabel from "@/components/SectionLabel";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import AbsenceForm from "./AbsenceForm";
 import ReviewButtons from "./ReviewButtons";
 
@@ -65,7 +66,7 @@ export default async function AbsencesPage() {
                 <div>
                   <p className="font-medium text-ardoise-900">{a.user.firstName} {a.user.lastName}</p>
                   <p className="text-ardoise-500">
-                    {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
+                    {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })} → {a.endDate.toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })}
                   </p>
                   {a.comment && <p className="text-xs text-ardoise-400">« {a.comment} »</p>}
                 </div>
@@ -96,7 +97,7 @@ export default async function AbsencesPage() {
           {mine.map((a) => (
             <li key={a.id} className="flex items-center justify-between border-b border-ardoise-100 pb-2 last:border-0">
               <span>
-                {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR")} → {a.endDate.toLocaleDateString("fr-FR")}
+                {TYPE_LABELS[a.type] ?? a.type} — {a.startDate.toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })} → {a.endDate.toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })}
               </span>
               <span className={`badge ${STATUS_STYLES[a.status]}`}>{STATUS_LABELS[a.status] ?? a.status}</span>
             </li>

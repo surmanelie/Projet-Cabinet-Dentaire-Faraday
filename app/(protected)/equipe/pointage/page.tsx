@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAllTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
 import { getAppUrl } from "@/lib/email";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import SectionLabel from "@/components/SectionLabel";
 import QrCodes from "./QrCodes";
 import AdminClockEdit from "./AdminClockEdit";
@@ -101,7 +102,7 @@ export default async function AdminPointagePage() {
                         <div key={e.id} className="flex items-center gap-3 text-xs text-ardoise-500">
                           <span className="w-32">{ACTION_LABELS[e.action]}</span>
                           <span>
-                            {e.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                            {e.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: CABINET_TIMEZONE })}
                           </span>
                           {e.source === "admin" && (
                             <span className="text-amber-600">(admin)</span>

@@ -1,6 +1,7 @@
 import "server-only";
 import PDFDocument from "pdfkit";
 import type { MonthlySummary } from "@/lib/hours-engine";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 
 type DailyEntry = {
   date: Date;
@@ -88,7 +89,7 @@ export function generateEmployeeRecapPdf(data: EmployeeRecapData): Promise<Buffe
       for (const entry of data.dailyEntries) {
         if (doc.y > 720) doc.addPage();
         const y = doc.y;
-        const dateLabel = entry.date.toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "2-digit" });
+        const dateLabel = entry.date.toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "2-digit", timeZone: CABINET_TIMEZONE });
         doc.text(dateLabel, colX[0], y, { width: 100 });
         doc.text(entry.actualStart, colX[1], y, { width: 80 });
         doc.text(entry.actualEnd, colX[2], y, { width: 80 });
@@ -99,7 +100,7 @@ export function generateEmployeeRecapPdf(data: EmployeeRecapData): Promise<Buffe
     }
 
     doc.moveDown(2);
-    doc.fontSize(9).fillColor("#94a3b8").text(`Document généré le ${new Date().toLocaleString("fr-FR")} — usage interne au cabinet.`);
+    doc.fontSize(9).fillColor("#94a3b8").text(`Document généré le ${new Date().toLocaleString("fr-FR", { timeZone: CABINET_TIMEZONE })} — usage interne au cabinet.`);
 
     doc.end();
   });
@@ -150,7 +151,7 @@ export function generateGlobalAccountingPdf(
     });
 
     doc.moveDown(2);
-    doc.fontSize(8).fillColor("#94a3b8").text(`Document généré le ${new Date().toLocaleString("fr-FR")}.`);
+    doc.fontSize(8).fillColor("#94a3b8").text(`Document généré le ${new Date().toLocaleString("fr-FR", { timeZone: CABINET_TIMEZONE })}.`);
 
     doc.end();
   });

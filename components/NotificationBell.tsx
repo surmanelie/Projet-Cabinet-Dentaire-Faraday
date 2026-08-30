@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { markAllNotificationsReadAction, markNotificationReadAction } from "@/lib/actions/notifications";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 
 type Notif = { id: string; title: string; message: string; link: string | null; createdAt: Date };
 
@@ -48,7 +49,7 @@ export default function NotificationBell({ notifications }: { notifications: Not
                   <p className="text-ardoise-500">{n.message}</p>
                   <div className="mt-1.5 flex items-center justify-between">
                     <span className="text-xs text-ardoise-400">
-                      {new Date(n.createdAt).toLocaleString("fr-FR")}
+                      {new Date(n.createdAt).toLocaleString("fr-FR", { timeZone: CABINET_TIMEZONE })}
                     </span>
                     <button
                       className="text-xs text-faraday-700 hover:underline"

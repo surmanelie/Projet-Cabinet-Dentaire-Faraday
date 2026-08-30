@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { recordClockFromFormAction, type ClockResult } from "@/lib/actions/clock";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import type { ClockAction } from "@prisma/client";
 
 interface Info {
@@ -54,6 +55,7 @@ export default function ClockButton({ action }: { action: string }) {
                     hour: "2-digit",
                     minute: "2-digit",
                     second: "2-digit",
+                    timeZone: CABINET_TIMEZONE,
                   })
                 : "—"
             }
@@ -67,6 +69,7 @@ export default function ClockButton({ action }: { action: string }) {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
+                    timeZone: CABINET_TIMEZONE,
                   })
                 : "—"
             }

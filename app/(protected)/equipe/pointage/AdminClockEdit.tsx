@@ -5,6 +5,7 @@ import {
   editClockEntryAction,
   addClockEntryAction,
 } from "@/lib/actions/clock";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import type { ClockAction } from "@prisma/client";
 
 type Entry = {
@@ -32,8 +33,28 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 // ── Helper: parse datetime-local string → Date ────────────────────────────────
+// Le navigateur interprète cette chaîne "naïve" (sans fuseau) selon SON
+// propre fuseau local — correct puisque l'admin est physiquement au
+// cabinet (France). Le pendant "Date → chaîne" doit donc explicitement
+// afficher l'heure de Paris (pas l'heure du serveur), pour que ce qui
+// s'affiche dans le champ corresponde bien à ce qui sera renvoyé si
+// l'admin valide sans rien changer.
 function parseDatetimeLocal(value: string): Date {
   return new Date(value);
+}
+
+function toParisDatetimeLocalValue(d: Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: CABINET_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)!.value;
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
 // ── Edit form ─────────────────────────────────────────────────────────────────
@@ -53,9 +74,7 @@ function EditEntryForm({
     {}
   );
 
-  const defaultTs = entry.timestamp
-    .toISOString()
-    .slice(0, 16); // "YYYY-MM-DDTHH:mm"
+  const defaultTs = toParisDatetimeLocalValue(entry.timestamp); // "YYYY-MM-DDTHH:mm", heure de Paris
 
   if (state.success) {
     return (
@@ -111,7 +130,7 @@ function AddEntryForm({
   assistants: Assistant[];
   onClose: () => void;
 }) {
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = toParisDatetimeLocalValue(new Date()).slice(0, 10);
 
   const [state, formAction, pending] = useActionState(
     async (_prev: { error?: string; success?: boolean }, formData: FormData) => {
@@ -250,6 +269,7 @@ export default function AdminClockEdit({
                     {e.timestamp.toLocaleTimeString("fr-FR", {
                       hour: "2-digit",
                       minute: "2-digit",
+                      timeZone: CABINET_TIMEZONE,
                     })}
                   </td>
                   <td className="py-2 pr-4">

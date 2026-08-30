@@ -1,20 +1,20 @@
-import { startOfDay, endOfDay, addDays } from "date-fns";
+import { addDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import StatCard from "@/components/StatCard";
 import SectionLabel from "@/components/SectionLabel";
 import Link from "next/link";
 import { getAgendaData } from "@/lib/agenda";
 import { computeProgrammedMinutesForMonth } from "@/lib/hours-engine";
+import { startOfParisDay, endOfParisDay, getParisYearMonth, CABINET_TIMEZONE } from "@/lib/timezone";
 
 const WEEKS_PER_MONTH = 4.33;
 
 export default async function DashboardPage() {
   const today = new Date();
-  const todayStart = startOfDay(today);
-  const todayEnd = endOfDay(today);
+  const todayStart = startOfParisDay(today);
+  const todayEnd = endOfParisDay(today);
   const in30Days = addDays(today, 30);
-  const month = today.getMonth() + 1;
-  const year = today.getFullYear();
+  const { year, month } = getParisYearMonth(today);
 
   const [
     activeAssistants,
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-10">
       <div>
-        <SectionLabel>{today.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</SectionLabel>
+        <SectionLabel>{today.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: CABINET_TIMEZONE })}</SectionLabel>
         <h1 className="mt-3 page-title">Tableau de bord</h1>
       </div>
 

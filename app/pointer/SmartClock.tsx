@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { getPinStatus, recordClockByPinAction, type PinStatusResult, type ClockResult } from "@/lib/actions/clock";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import type { ClockAction } from "@prisma/client";
 
 const ACTION_LABELS: Record<ClockAction, string> = {
@@ -43,7 +44,7 @@ export default function SmartClock() {
             label="Heure"
             value={
               clock.timestamp
-                ? new Date(clock.timestamp).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+                ? new Date(clock.timestamp).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: CABINET_TIMEZONE })
                 : "—"
             }
           />
