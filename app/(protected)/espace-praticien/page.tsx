@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import SectionLabel from "@/components/SectionLabel";
+import { startOfParisDay, CABINET_TIMEZONE } from "@/lib/timezone";
 
 const STATUS_STYLES: Record<string, string> = {
   DEMANDE: "bg-amber-50 text-amber-700",
@@ -31,8 +32,7 @@ export default async function EspacePraticienPage() {
 
   const assistantIds = assignments.map((a) => a.assistantId);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = startOfParisDay(new Date());
   const weekFromNow = new Date(today);
   weekFromNow.setDate(weekFromNow.getDate() + 7);
 
@@ -66,7 +66,7 @@ export default async function EspacePraticienPage() {
             <ul className="space-y-2 text-sm">
               {myEntries.map((e) => (
                 <li key={e.id} className="flex justify-between border-b border-ardoise-100 pb-1">
-                  <span>{new Date(e.date).toLocaleDateString("fr-FR")}</span>
+                  <span>{new Date(e.date).toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })}</span>
                   <span className="text-ardoise-500">
                     {e.plannedStart ?? "—"} - {e.plannedEnd ?? "—"}
                   </span>
@@ -101,8 +101,8 @@ export default async function EspacePraticienPage() {
                 <li key={ab.id} className="flex items-center justify-between border-b border-ardoise-100 pb-1">
                   <span>
                     {ab.user.firstName} {ab.user.lastName} — {ABSENCE_LABELS[ab.type]} (
-                    {new Date(ab.startDate).toLocaleDateString("fr-FR")} →{" "}
-                    {new Date(ab.endDate).toLocaleDateString("fr-FR")})
+                    {new Date(ab.startDate).toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })} →{" "}
+                    {new Date(ab.endDate).toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE })})
                   </span>
                   <span className={`badge ${STATUS_STYLES[ab.status]}`}>{ab.status}</span>
                 </li>

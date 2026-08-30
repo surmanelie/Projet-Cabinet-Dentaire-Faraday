@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { getContacts, getConversation } from "@/lib/actions/messages";
 import SectionLabel from "@/components/SectionLabel";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import MessageForm from "./MessageForm";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -96,7 +97,7 @@ export default async function MessagesPage({
                         >
                           <p className="whitespace-pre-wrap break-words">{m.body}</p>
                           <p className={`mt-0.5 text-[10px] ${mine ? "text-white/70" : "text-ardoise-400"}`}>
-                            {m.createdAt.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                            {m.createdAt.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: CABINET_TIMEZONE })}
                           </p>
                         </div>
                       </div>

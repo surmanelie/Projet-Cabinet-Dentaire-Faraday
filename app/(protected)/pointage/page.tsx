@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { getTodayClockEntries, getClockStatus } from "@/lib/actions/clock";
 import { ALLOWED_BY_STATUS } from "@/lib/clock-hours";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 import SectionLabel from "@/components/SectionLabel";
 import type { ClockAction } from "@prisma/client";
 
@@ -81,7 +82,7 @@ export default async function PointageIndexPage() {
               <li key={e.id} className="flex items-center justify-between py-2 text-sm">
                 <span className="text-ardoise-700">{ACTION_LABELS[e.action] ?? e.action}</span>
                 <span className="text-ardoise-400">
-                  {e.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                  {e.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: CABINET_TIMEZONE })}
                   {e.source === "admin" && (
                     <span className="ml-2 text-xs text-amber-600">(corrigé)</span>
                   )}

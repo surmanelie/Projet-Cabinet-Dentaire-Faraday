@@ -1,5 +1,6 @@
 import "server-only";
 import type { MonthlySummary } from "@/lib/hours-engine";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 
 function escapeCsvField(value: string): string {
   if (/[";\n]/.test(value)) {
@@ -9,7 +10,7 @@ function escapeCsvField(value: string): string {
 }
 
 function formatFrDate(d: Date): string {
-  return d.toLocaleDateString("fr-FR");
+  return d.toLocaleDateString("fr-FR", { timeZone: CABINET_TIMEZONE });
 }
 
 function formatFrNumber(n: number): string {

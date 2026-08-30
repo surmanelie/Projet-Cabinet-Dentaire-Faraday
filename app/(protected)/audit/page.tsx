@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import SectionLabel from "@/components/SectionLabel";
+import { CABINET_TIMEZONE } from "@/lib/timezone";
 
 export default async function AuditPage({
   searchParams,
@@ -54,7 +55,7 @@ export default async function AuditPage({
             {logs.map((log) => (
               <tr key={log.id} className="border-b border-ardoise-100 align-top last:border-0">
                 <td className="py-3.5 pr-4 whitespace-nowrap text-ardoise-500">
-                  {log.createdAt.toLocaleString("fr-FR")}
+                  {log.createdAt.toLocaleString("fr-FR", { timeZone: CABINET_TIMEZONE })}
                 </td>
                 <td className="py-3.5 pr-4 whitespace-nowrap">
                   {log.actor ? `${log.actor.firstName} ${log.actor.lastName}` : "Système"}

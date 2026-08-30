@@ -7,6 +7,7 @@ import { isAdminOrRh } from "@/lib/permissions";
 import { writeAuditLog } from "@/lib/audit";
 import { deriveDayFromClock, ALLOWED_BY_STATUS, type ClockStatus } from "@/lib/clock-hours";
 import { getClientIp, isPinBlocked, isCabinetIpAllowed } from "@/lib/security";
+import { startOfParisDay } from "@/lib/timezone";
 import type { ClockAction } from "@prisma/client";
 
 // Statuts de WorkEntry issus du workflow de validation : on ne les écrase
@@ -25,10 +26,10 @@ const VALIDATED_STATUSES = ["A_VALIDER", "VALIDE", "REFUSE", "CORRIGE", "VERROUI
  *   du pointage, l'entrée est supprimée pour ne pas laisser de donnée morte.
  */
 async function syncWorkEntryFromClock(userId: string, day: Date): Promise<void> {
-  const dayStart = new Date(day);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
+  const dayStart = startOfParisDay(day);
+  // +25h avant de re-dériver le minuit Paris suivant : couvre aussi les
+  // jours à 23h/25h autour d'un changement d'heure d'été/hiver.
+  const dayEnd = startOfParisDay(new Date(dayStart.getTime() + 25 * 60 * 60 * 1000));
 
   const entries = await prisma.clockEntry.findMany({
     where: { userId, timestamp: { gte: dayStart, lt: dayEnd } },
@@ -156,8 +157,7 @@ export async function recordClockAction(action: ClockAction): Promise<ClockResul
   }
 
   // Récupère le dernier pointage du jour de cette assistante
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = startOfParisDay(new Date());
 
   const lastEntry = await prisma.clockEntry.findFirst({
     where: { userId: session.id, timestamp: { gte: todayStart } },
@@ -197,8 +197,7 @@ export async function recordClockAction(action: ClockAction): Promise<ClockResul
  * Retourne le statut actuel d'un utilisateur pour aujourd'hui.
  */
 export async function getClockStatus(userId: string): Promise<ClockStatus> {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = startOfParisDay(new Date());
 
   const lastEntry = await prisma.clockEntry.findFirst({
     where: { userId, timestamp: { gte: todayStart } },
@@ -219,8 +218,7 @@ export async function getClockStatus(userId: string): Promise<ClockStatus> {
  * Retourne tous les pointages du jour pour un utilisateur.
  */
 export async function getTodayClockEntries(userId: string) {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = startOfParisDay(new Date());
 
   return prisma.clockEntry.findMany({
     where: { userId, timestamp: { gte: todayStart } },
@@ -233,8 +231,7 @@ export async function getTodayClockEntries(userId: string) {
  * (usage admin).
  */
 export async function getAllTodayClockEntries() {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = startOfParisDay(new Date());
 
   return prisma.clockEntry.findMany({
     where: { timestamp: { gte: todayStart } },
@@ -385,8 +382,7 @@ export async function recordClockByPinAction(
   }
 
   // Vérifie la cohérence de la succession des actions du jour.
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = startOfParisDay(new Date());
   const lastEntry = await prisma.clockEntry.findFirst({
     where: { userId: matched.id, timestamp: { gte: todayStart } },
     orderBy: { timestamp: "desc" },

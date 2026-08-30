@@ -7,6 +7,7 @@ import { generateEmployeeRecapPdf, generateGlobalAccountingPdf } from "@/lib/pdf
 import { getCabinetSettings, getRulesConfig } from "@/lib/rules";
 import { computeDayMinutes } from "@/lib/hours-engine";
 import { writeAuditLog } from "@/lib/audit";
+import { startOfParisDay, endOfParisDay } from "@/lib/timezone";
 
 export async function GET(req: Request) {
   const session = await getSession();
@@ -76,8 +77,8 @@ export async function GET(req: Request) {
   // Détail jour par jour des heures RÉELLEMENT pointées (jamais le planning
   // théorique) — dates, horaires réels, pause, total du jour — exigé sur le
   // PDF individuel en plus du récapitulatif agrégé.
-  const start = new Date(year, month - 1, 1);
-  const end = new Date(year, month, 0, 23, 59, 59);
+  const start = startOfParisDay(new Date(year, month - 1, 1));
+  const end = endOfParisDay(new Date(year, month - 1, new Date(year, month, 0).getDate()));
   const rules = await getRulesConfig();
   const workedEntries = await prisma.workEntry.findMany({
     where: { userId: targetUserId, date: { gte: start, lte: end }, actualStart: { not: null }, actualEnd: { not: null } },

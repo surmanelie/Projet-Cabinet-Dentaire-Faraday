@@ -1,11 +1,16 @@
 import { describe, it, expect } from "vitest";
+import { fromZonedTime } from "date-fns-tz";
 import { deriveDayFromClock, type ClockEvent } from "@/lib/clock-hours";
 
-/** Petit utilitaire : construit un timestamp du jour à HH:MM. */
+/**
+ * Petit utilitaire : construit un timestamp du jour à HH:MM, HEURE DE
+ * PARIS explicitement (pas via `new Date(y,m,d,h,m)`, qui dépendrait du
+ * fuseau de la machine exécutant les tests — `deriveDayFromClock` formate
+ * désormais toujours en Europe/Paris, les tests doivent donc construire
+ * leurs entrées de la même façon pour rester valables sur CI en UTC).
+ */
 function at(hhmm: string): Date {
-  const [h, m] = hhmm.split(":").map(Number);
-  const d = new Date(2026, 0, 5, h, m, 0, 0); // lundi 5 janvier 2026
-  return d;
+  return fromZonedTime(`2026-01-05T${hhmm}:00`, "Europe/Paris"); // lundi 5 janvier 2026
 }
 
 describe("deriveDayFromClock", () => {

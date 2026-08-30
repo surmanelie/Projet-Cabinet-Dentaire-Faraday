@@ -1,13 +1,21 @@
 import "server-only";
 import { prisma } from "./prisma";
 import type { DayTemplate, DayEntry } from "@/components/MonthAgenda";
+import { startOfParisDay, endOfParisDay } from "@/lib/timezone";
 
-function pad(n: number) {
-  return String(n).padStart(2, "0");
-}
-
+/**
+ * "YYYY-MM-DD" tel que vécu à Paris — jamais via les accesseurs locaux de
+ * Date (`getFullYear`/`getMonth`/`getDate`), qui dépendent du fuseau du
+ * processus serveur et décalaient les entrées d'un jour sur la grille de
+ * l'agenda quand le serveur tourne en UTC.
+ */
 export function dateKey(d: Date): string {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
 }
 
 /**
@@ -16,8 +24,8 @@ export function dateKey(d: Date): string {
  * congés).
  */
 export async function getAgendaData(userId: string, year: number, month: number) {
-  const start = new Date(year, month - 1, 1);
-  const end = new Date(year, month, 0, 23, 59, 59);
+  const start = startOfParisDay(new Date(year, month - 1, 1));
+  const end = endOfParisDay(new Date(year, month - 1, new Date(year, month, 0).getDate()));
 
   const [templates, entries] = await Promise.all([
     prisma.scheduleTemplate.findMany({ where: { userId, active: true } }),

@@ -7,6 +7,7 @@ import { isAdminOrRh } from "@/lib/permissions";
 import { writeAuditLog, notifyUser } from "@/lib/audit";
 import { computeMonthlySummary, computeDayMinutes, type MonthlySummary } from "@/lib/hours-engine";
 import { getRulesConfig } from "@/lib/rules";
+import { startOfParisDay, endOfParisDay, getParisDayOfWeek } from "@/lib/timezone";
 
 /**
  * Recalcule le récapitulatif mensuel d'un utilisateur à partir des
@@ -19,8 +20,8 @@ export async function computeMonthlyRecap(userId: string, month: number, year: n
   const user = await prisma.user.findUnique({ where: { id: userId }, include: { assistantProfile: true } });
   if (!user) throw new Error("Utilisateur introuvable");
 
-  const start = new Date(year, month - 1, 1);
-  const end = new Date(year, month, 0, 23, 59, 59);
+  const start = startOfParisDay(new Date(year, month - 1, 1));
+  const end = endOfParisDay(new Date(year, month - 1, new Date(year, month, 0).getDate()));
 
   const [entries, absences, adjustments, rules] = await Promise.all([
     prisma.workEntry.findMany({ where: { userId, date: { gte: start, lte: end } } }),
@@ -52,14 +53,12 @@ export async function computeMonthlyRecap(userId: string, month: number, year: n
   for (const a of absences) {
     const from = a.startDate > start ? a.startDate : start;
     const to = a.endDate < end ? a.endDate : end;
-    const cursor = new Date(from);
-    cursor.setHours(0, 0, 0, 0);
-    const lastDay = new Date(to);
-    lastDay.setHours(0, 0, 0, 0);
+    let cursor = startOfParisDay(from);
+    const lastDay = startOfParisDay(to);
     while (cursor <= lastDay) {
-      const dow = cursor.getDay();
+      const dow = getParisDayOfWeek(cursor);
       if (dow !== 0 && dow !== 6) absenceDays++;
-      cursor.setDate(cursor.getDate() + 1);
+      cursor = startOfParisDay(new Date(cursor.getTime() + 25 * 60 * 60 * 1000));
     }
   }
   const absenceHours = absenceDays * dailyHours;
