@@ -31,12 +31,12 @@ export function generateGlobalAccountingCsv(rows: GlobalReportRow[], month: numb
     "Salarié(e)",
     "Période",
     "Heures prévues",
-    "Heures travaillées",
+    "Heures effectuées au cabinet",
+    "Heures de formation",
     "Heures d'absence",
     "Ajustements (h)",
     "Heures sup./compl. (h)",
     "Heures de déficit (h)",
-    "Solde (h)",
   ];
 
   const lines = [headers.map(escapeCsvField).join(";")];
@@ -48,11 +48,11 @@ export function generateGlobalAccountingCsv(rows: GlobalReportRow[], month: numb
         `${String(month).padStart(2, "0")}/${year}`,
         formatFrNumber(row.summary.totalPlannedHours),
         formatFrNumber(row.summary.totalWorkedHours),
+        formatFrNumber(row.summary.totalFormationHours),
         formatFrNumber(row.summary.totalAbsenceHours),
         formatFrNumber(row.summary.totalAdjustmentHours),
         formatFrNumber(row.summary.overtimeHours),
         formatFrNumber(row.summary.deficitHours),
-        formatFrNumber(row.summary.balanceHours),
       ]
         .map(escapeCsvField)
         .join(";")

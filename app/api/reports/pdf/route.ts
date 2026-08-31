@@ -95,6 +95,19 @@ export async function GET(req: Request) {
     ),
   }));
 
+  // Détail des absences acceptées sur la période (arrêts maladie, congés,
+  // formation...) — pour le comptable, en bas du récapitulatif.
+  const absenceRows = await prisma.absence.findMany({
+    where: { userId: targetUserId, status: "ACCEPTE", startDate: { lte: end }, endDate: { gte: start } },
+    orderBy: { startDate: "asc" },
+  });
+  const absences = absenceRows.map((a) => ({
+    type: a.type,
+    startDate: a.startDate,
+    endDate: a.endDate,
+    hours: a.hours,
+  }));
+
   const pdfBuffer = await generateEmployeeRecapPdf({
     cabinetName: settings.name,
     employeeName: `${user.firstName} ${user.lastName}`,
@@ -103,6 +116,7 @@ export async function GET(req: Request) {
     summary,
     status: validation?.status ?? "EN_PREPARATION",
     dailyEntries,
+    absences,
   });
 
   await writeAuditLog({
