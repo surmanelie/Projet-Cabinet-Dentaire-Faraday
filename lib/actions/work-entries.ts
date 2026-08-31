@@ -19,7 +19,7 @@ export async function getOrCreateTodayEntry(userId: string) {
 
   const dayOfWeek = getParisDayOfWeek(today);
   const template = await prisma.scheduleTemplate.findFirst({
-    where: { userId, dayOfWeek, active: true },
+    where: { userId, dayOfWeek, active: true, dayType: "HORAIRE" },
   });
 
   return prisma.workEntry.create({

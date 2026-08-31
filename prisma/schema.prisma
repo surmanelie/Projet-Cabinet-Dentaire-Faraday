@@ -196,16 +196,18 @@ model AssistantPractitionerAssignment {
 }
 
 model ScheduleTemplate {
-  id         String   @id @default(cuid())
-  userId     String
-  name       String   @default("Horaire type")
-  dayOfWeek  Int      // 0 = dimanche ... 6 = samedi
-  startTime  String   // "08:30"
-  endTime    String   // "18:30"
-  breakStart String?
-  breakEnd   String?
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String
+  name           String   @default("Horaire type")
+  dayOfWeek      Int      // 0 = dimanche ... 6 = samedi
+  dayType        String   @default("HORAIRE") // HORAIRE | FORMATION
+  startTime      String?  // "08:30" — requis si dayType = HORAIRE
+  endTime        String?  // "18:30" — requis si dayType = HORAIRE
+  breakStart     String?
+  breakEnd       String?
+  formationHours Float?   // requis si dayType = FORMATION : heures de formation ce jour-là, chaque semaine
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -252,6 +254,11 @@ model Absence {
   attachmentPath String?
   reviewedById String?
   reviewedAt   DateTime?
+  // Renseigné uniquement pour une absence FORMATION générée automatiquement
+  // depuis un jour type récurrent (ScheduleTemplate.dayType = FORMATION) —
+  // permet de la régénérer/nettoyer sans toucher aux formations ajoutées
+  // manuellement (bouton dédié ou édition en masse du planning).
+  generatedFromTemplateId String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 

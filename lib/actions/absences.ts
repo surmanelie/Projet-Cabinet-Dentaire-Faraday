@@ -227,6 +227,63 @@ export async function bulkAddFormationAction(
   return { success: true };
 }
 
+/** Nombre de jours sur lesquels une formation récurrente (jour type) est
+ * matérialisée à l'avance — pas de tâche planifiée dans cette application,
+ * donc on génère un horizon large (~1 an) au moment où le jour type est
+ * enregistré plutôt que de recalculer à chaque vue de l'agenda. */
+const RECURRING_FORMATION_HORIZON_DAYS = 365;
+
+/**
+ * Génère les absences FORMATION (acceptées) pour chaque occurrence future
+ * de `dayOfWeek`, à partir d'aujourd'hui et sur `RECURRING_FORMATION_HORIZON_DAYS`
+ * jours — utilisé quand un jour type récurrent (ScheduleTemplate) est réglé
+ * en mode Formation. Ignore les journées qui ont déjà une entrée (pointage,
+ * autre absence, jour verrouillé…) pour ne jamais écraser une donnée réelle.
+ */
+export async function generateRecurringFormation(userId: string, dayOfWeek: number, templateId: string, hours: number) {
+  const today = startOfParisDay(new Date());
+  const label = `Formation (${hours}h)`;
+  for (let i = 0; i <= RECURRING_FORMATION_HORIZON_DAYS; i++) {
+    const day = startOfParisDay(new Date(today.getTime() + i * 24 * 60 * 60 * 1000));
+    if (day.getDay() !== dayOfWeek) continue;
+    const existing = await prisma.workEntry.findUnique({ where: { userId_date: { userId, date: day } } });
+    if (existing) continue;
+    await prisma.absence.create({
+      data: {
+        userId,
+        type: "FORMATION",
+        startDate: day,
+        endDate: day,
+        hours,
+        status: "ACCEPTE",
+        generatedFromTemplateId: templateId,
+      },
+    });
+    await prisma.workEntry.create({ data: { userId, date: day, source: "absence", comment: label, status: "PRE_REMPLI" } });
+  }
+}
+
+/**
+ * Retire les occurrences futures de formation récurrente générées par
+ * `generateRecurringFormation` pour d'anciens jours types (remplacés ou
+ * repassés en horaire normal) — ne touche jamais une formation ajoutée
+ * manuellement (bouton dédié ou édition en masse), qui n'a pas de
+ * `generatedFromTemplateId`.
+ */
+export async function clearGeneratedFormation(userId: string, templateIds: string[]) {
+  if (templateIds.length === 0) return;
+  const today = startOfParisDay(new Date());
+  const stale = await prisma.absence.findMany({
+    where: { userId, generatedFromTemplateId: { in: templateIds }, startDate: { gte: today } },
+    select: { id: true, startDate: true },
+  });
+  if (stale.length === 0) return;
+  await prisma.absence.deleteMany({ where: { id: { in: stale.map((s) => s.id) } } });
+  await prisma.workEntry.deleteMany({
+    where: { userId, source: "absence", date: { in: stale.map((s) => s.startDate) } },
+  });
+}
+
 export async function reviewAbsenceAction(absenceId: string, decision: "ACCEPTE" | "REFUSE") {
   const session = await getSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
