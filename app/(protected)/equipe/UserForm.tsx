@@ -22,7 +22,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   RH: "RH / Responsable",
   PRATICIEN: "Praticien",
-  ASSISTANT: "Employé",
+  ASSISTANT: "Assistante",
   COMPTABLE: "Comptable (lecture seule)",
 };
 
@@ -80,14 +80,10 @@ export default function UserForm({
           <input name="lastName" required className="input" defaultValue={user?.lastName} />
         </div>
       </div>
-      <div>
-        <label className="label">Email / identifiant</label>
-        <input name="email" type="email" required className="input" defaultValue={user?.email} />
-      </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">Téléphone</label>
-          <input name="phone" className="input" defaultValue={user?.phone ?? ""} />
+          <label className="label">Email / identifiant</label>
+          <input name="email" type="email" required className="input" defaultValue={user?.email} />
         </div>
         <div>
           <label className="label">Couleur planning</label>
@@ -107,7 +103,7 @@ export default function UserForm({
             <option value="ADMIN">Administrateur</option>
             <option value="RH">RH / Responsable</option>
             <option value="PRATICIEN">Praticien</option>
-            <option value="ASSISTANT">Employé</option>
+            <option value="ASSISTANT">Assistante</option>
             <option value="COMPTABLE">Comptable (lecture seule)</option>
           </select>
         </div>

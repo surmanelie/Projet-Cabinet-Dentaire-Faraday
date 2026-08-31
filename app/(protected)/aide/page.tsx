@@ -25,8 +25,8 @@ const SECTIONS: { title: string; roles: string[]; items: { q: string; a: string 
         a: "Va dans « Mon espace » ou « Mes horaires » pour saisir tes heures d'arrivée/départ et tes pauses, jour par jour.",
       },
       {
-        q: "Comment je demande une absence ou des congés ?",
-        a: "Va dans « Absences », crée une nouvelle demande en précisant le type (congé, maladie, RTT...) et les dates. Elle sera ensuite validée par l'administrateur ou le RH.",
+        q: "Comment je demande une absence ?",
+        a: "Va dans « Absences », crée une nouvelle demande en précisant le type (payée, maladie, formation...) et les dates. Elle sera ensuite validée par l'administrateur ou le RH.",
       },
       {
         q: "Comment je vois si j'ai des heures en plus ou en moins ?",
@@ -61,7 +61,7 @@ const SECTIONS: { title: string; roles: string[]; items: { q: string; a: string 
         a: "Va dans « Équipe », renseigne prénom, nom, email et rôle, puis valide. Un email d'invitation est envoyé automatiquement (ou un lien à transmettre toi-même si l'envoi automatique n'est pas configuré) pour que la personne choisisse son propre mot de passe. Tu es le seul à pouvoir créer des comptes.",
       },
       {
-        q: "Comment je suis le nombre d'heures de chaque employé ?",
+        q: "Comment je suis le nombre d'heures de chaque assistante ?",
         a: "Va dans « Équipe » > « Suivi des heures » : tu y vois, pour chaque personne et chaque mois, les heures travaillées, les heures contractuelles, et le solde (heures manquantes ou heures en plus/supplémentaires).",
       },
       {

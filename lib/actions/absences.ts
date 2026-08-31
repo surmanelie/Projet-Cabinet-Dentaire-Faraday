@@ -181,6 +181,52 @@ export async function addFormationForAssistantAction(
   return { success: true };
 }
 
+/**
+ * Variante en masse de `addFormationForAssistantAction`, utilisée par
+ * l'édition en masse du planning (sélection de plusieurs jours dans
+ * l'agenda admin) : une journée de formation de `hours` heures est créée et
+ * auto-acceptée pour chaque date sélectionnée.
+ */
+export async function bulkAddFormationAction(
+  userId: string,
+  dates: string[],
+  hours: number,
+  comment?: string
+): Promise<FormationFormResult> {
+  const session = await getSession();
+  if (!session || !isAdminOrRh(session.role)) return { error: "Non autorisé." };
+  if (dates.length === 0) return { error: "Aucun jour sélectionné." };
+  if (!hours || hours <= 0 || hours > 24) return { error: "Merci d'indiquer un nombre d'heures valide." };
+
+  for (const dateStr of dates) {
+    const day = new Date(dateStr);
+    if (Number.isNaN(day.getTime())) continue;
+    await prisma.absence.create({
+      data: {
+        userId,
+        type: "FORMATION",
+        startDate: day,
+        endDate: day,
+        hours,
+        comment: comment || null,
+        status: "ACCEPTE",
+        reviewedById: session.id,
+        reviewedAt: new Date(),
+      },
+    });
+    await markAbsenceInSchedule(userId, day, day, "FORMATION", hours);
+  }
+
+  await writeAuditLog({ actorId: session.id, action: "BULK_ADD_FORMATION", entityType: "Absence", entityId: userId, newValue: { dates, hours } });
+  await notifyUser(userId, "Formation programmée", `${dates.length} jour${dates.length > 1 ? "s" : ""} de formation (${hours}h chacun) ${dates.length > 1 ? "ont été ajoutés" : "a été ajouté"} à votre planning.`, "/absences");
+
+  revalidatePath("/absences");
+  revalidatePath("/planning");
+  revalidatePath("/equipe/heures");
+  revalidatePath("/mon-espace");
+  return { success: true };
+}
+
 export async function reviewAbsenceAction(absenceId: string, decision: "ACCEPTE" | "REFUSE") {
   const session = await getSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
@@ -203,10 +249,10 @@ export async function reviewAbsenceAction(absenceId: string, decision: "ACCEPTE"
   await writeAuditLog({ actorId: session.id, action: `ABSENCE_${decision}`, entityType: "Absence", entityId: absenceId });
   await notifyUser(
     absence.userId,
-    decision === "ACCEPTE" ? "Congé accepté" : "Congé refusé",
+    decision === "ACCEPTE" ? "Absence acceptée" : "Absence refusée",
     decision === "ACCEPTE"
-      ? "Votre congé a été accepté et ajouté à votre planning."
-      : "Votre demande de congé a été refusée.",
+      ? "Votre absence a été acceptée et ajoutée à votre planning."
+      : "Votre demande d'absence a été refusée.",
     "/absences"
   );
 

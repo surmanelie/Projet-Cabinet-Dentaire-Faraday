@@ -74,7 +74,7 @@ export default async function AbsencesPage() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <SectionLabel>Absences</SectionLabel>
-            <h1 className="mt-3 page-title">Congés à valider</h1>
+            <h1 className="mt-3 page-title">Absences à valider</h1>
           </div>
           <AddFormationModal assistants={assistants} />
         </div>

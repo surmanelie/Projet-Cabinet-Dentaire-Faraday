@@ -7,7 +7,7 @@ export type NavItem = { href: string; label: string; roles: Role[] };
 export const NAV_ITEMS: NavItem[] = [
   // Administrateur / gestion
   { href: "/dashboard", label: "Tableau de bord", roles: ["ADMIN", "RH"] },
-  { href: "/equipe", label: "Employés", roles: ["ADMIN", "RH"] },
+  { href: "/equipe", label: "Assistantes", roles: ["ADMIN", "RH"] },
   { href: "/planning", label: "Planning", roles: ["ADMIN", "RH"] },
   { href: "/equipe/pointage", label: "Pointage QR", roles: ["ADMIN", "RH"] },
   { href: "/absences", label: "Absences", roles: ["ADMIN", "RH"] },
@@ -15,7 +15,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/validations", label: "Validations", roles: ["ADMIN", "RH", "COMPTABLE"] },
   { href: "/parametres", label: "Paramètres", roles: ["ADMIN", "RH"] },
 
-  // Employé (assistant / praticien)
+  // Assistante / praticien
   { href: "/mon-espace", label: "Mon espace", roles: ["ASSISTANT"] },
   { href: "/pointage", label: "Pointer", roles: ["ASSISTANT"] },
   { href: "/mes-horaires", label: "Mon agenda", roles: ["ASSISTANT"] },

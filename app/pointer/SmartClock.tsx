@@ -38,7 +38,7 @@ export default function SmartClock() {
         </div>
         <h1 className="modal-title">Pointage enregistré</h1>
         <div className="space-y-2.5 rounded border border-ardoise-200 p-5 text-left">
-          <Row label="Employé" value={clock.userName ?? "—"} />
+          <Row label="Assistante" value={clock.userName ?? "—"} />
           <Row label="Action" value={clock.action ? ACTION_LABELS[clock.action] : "—"} />
           <Row
             label="Heure"
