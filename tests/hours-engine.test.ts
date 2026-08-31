@@ -99,6 +99,7 @@ describe("computeMonthlySummary", () => {
       weeklyContractHours: 35,
       workedMinutesByDay,
       absenceHours: 0,
+      formationHours: 0,
       adjustmentMinutes: 0,
     });
     expect(summary.totalWorkedHours).toBeCloseTo(140);
@@ -112,6 +113,7 @@ describe("computeMonthlySummary", () => {
       weeklyContractHours: 35,
       workedMinutesByDay,
       absenceHours: 35, // une semaine de congé payé comptée comme travaillée
+      formationHours: 0,
       adjustmentMinutes: 0,
     });
     expect(summary.totalAbsenceHours).toBe(35);
@@ -124,6 +126,7 @@ describe("computeMonthlySummary", () => {
       weeklyContractHours: 20,
       workedMinutesByDay,
       absenceHours: 0,
+      formationHours: 0,
       adjustmentMinutes: 0,
     });
     expect(summary.totalPlannedHours).toBeCloseTo(20 * 4.33);
@@ -136,6 +139,7 @@ describe("computeMonthlySummary", () => {
       weeklyContractHours: 35,
       workedMinutesByDay,
       absenceHours: 0,
+      formationHours: 0,
       adjustmentMinutes: -120, // -2h, ex: trop payé le mois précédent
     });
     expect(summary.totalAdjustmentHours).toBe(-2);
@@ -150,6 +154,7 @@ describe("computeMonthlySummary", () => {
       weeklyContractHours: 10,
       workedMinutesByDay: [],
       absenceHours: 0,
+      formationHours: 0,
       adjustmentMinutes: 0,
     });
     expect(summary.deficitHours).toBeCloseTo(summary.totalPlannedHours, 1);
@@ -233,5 +238,43 @@ describe("6 cas obligatoires — heures programmées (planning) vs contrat vs po
     expect(actualOvertimeHours).toBeCloseTo(1);
 
     expect(programmedOvertimeHours).not.toBeCloseTo(actualOvertimeHours);
+  });
+});
+
+describe("computeProgrammedMinutesForDay — la pause déjeuner de la semaine type est déduite", () => {
+  it("déduit la pause de la semaine type sur un jour au gabarit (09:00-17:00, pause 12:00-13:00 -> 7h)", () => {
+    const templatesByDow = { 1: { startTime: "09:00", endTime: "17:00", breakStart: "12:00", breakEnd: "13:00" } };
+    const minutes = computeProgrammedMinutesForDay(templatesByDow, undefined, 1);
+    expect(minutes).toBe(7 * 60); // 8h de présence - 1h de pause
+  });
+
+  it("déduit aussi la pause sur un jour dont l'horaire a été modifié en masse (override), la pause reste celle de la semaine type", () => {
+    const templatesByDow = { 1: { startTime: "09:00", endTime: "17:00", breakStart: "12:00", breakEnd: "13:00" } };
+    const minutes = computeProgrammedMinutesForDay(templatesByDow, { plannedStart: "08:00", plannedEnd: "18:00" }, 1);
+    expect(minutes).toBe(9 * 60); // 10h de présence - 1h de pause
+  });
+
+  it("ne déduit rien si aucune pause n'est définie dans la semaine type", () => {
+    const templatesByDow = { 1: { startTime: "09:00", endTime: "17:00" } };
+    const minutes = computeProgrammedMinutesForDay(templatesByDow, undefined, 1);
+    expect(minutes).toBe(8 * 60);
+  });
+});
+
+describe("computeMonthlySummary — heures de formation distinctes des heures travaillées", () => {
+  it("les heures de formation comptent au contrat sans jamais s'ajouter à totalWorkedHours", () => {
+    const workedMinutesByDay = Array(15).fill(7 * 60); // 105h réellement pointées
+    const summary = computeMonthlySummary({
+      contractType: "TEMPS_PLEIN",
+      weeklyContractHours: 35,
+      workedMinutesByDay,
+      absenceHours: 0,
+      formationHours: 21, // 3 jours de formation à 7h
+      adjustmentMinutes: 0,
+    });
+    expect(summary.totalWorkedHours).toBeCloseTo(105); // jamais mélangé
+    expect(summary.totalFormationHours).toBe(21);
+    // Le solde tient compte du travail réel + de la formation.
+    expect(summary.balanceHours).toBeCloseTo(105 + 21 - 35 * 4.33, 1);
   });
 });

@@ -19,12 +19,14 @@ export default function AbsenceForm() {
   const [state, formAction, pending] = useActionState(requestAbsenceAction, initialState);
   const today = new Date().toISOString().slice(0, 10);
   const [start, setStart] = useState("");
+  const [type, setType] = useState("CONGE_PAYE");
+  const isFormation = type === "FORMATION";
 
   return (
     <form action={formAction} className="space-y-3">
       <div>
         <label className="label">Type d&apos;absence</label>
-        <select name="type" required className="input">
+        <select name="type" required className="input" value={type} onChange={(e) => setType(e.target.value)}>
           {TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
@@ -32,7 +34,7 @@ export default function AbsenceForm() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">Date de début</label>
+          <label className="label">{isFormation ? "Date de la formation" : "Date de début"}</label>
           <input
             type="date"
             name="startDate"
@@ -43,11 +45,32 @@ export default function AbsenceForm() {
             className="input"
           />
         </div>
-        <div>
-          <label className="label">Date de fin</label>
-          <input type="date" name="endDate" required min={start || today} className="input" />
-        </div>
+        {isFormation ? (
+          <div>
+            <label className="label">Nombre d&apos;heures</label>
+            <input
+              type="number"
+              name="hours"
+              step="0.5"
+              min="0.5"
+              max="24"
+              required
+              placeholder="ex : 7"
+              className="input"
+            />
+          </div>
+        ) : (
+          <div>
+            <label className="label">Date de fin</label>
+            <input type="date" name="endDate" required min={start || today} className="input" />
+          </div>
+        )}
       </div>
+      {isFormation && (
+        <p className="text-xs text-ardoise-500">
+          Ces heures sont comptées dans votre contrat mais ne sont pas pointées (formation hors cabinet).
+        </p>
+      )}
       <div>
         <label className="label">Commentaire</label>
         <textarea name="comment" rows={2} className="input" />

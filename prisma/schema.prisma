@@ -246,6 +246,7 @@ model Absence {
   type         AbsenceType
   startDate    DateTime
   endDate      DateTime
+  hours        Float?        // uniquement pour FORMATION : nombre d'heures (journée partielle), comptées au contrat mais jamais pointées
   status       AbsenceStatus @default(DEMANDE)
   comment      String?
   attachmentPath String?

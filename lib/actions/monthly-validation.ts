@@ -48,9 +48,17 @@ export async function computeMonthlyRecap(userId: string, month: number, year: n
   // qu'elle couvre (lundi→vendredi), au prorata du contrat (contrat / 5 jours).
   // On compte chaque jour réel de la période (clippée au mois), pas le nombre
   // de demandes — un congé d'une semaine compte bien 5 jours.
+  // FORMATION est traitée à part : ce n'est pas une journée entière "hors
+  // contrat" mais un nombre d'heures précis (`Absence.hours`), jamais pointé
+  // mais compté au contrat — jamais confondu avec les autres absences.
   const dailyHours = contractHours / 5;
   let absenceDays = 0;
+  let formationHours = 0;
   for (const a of absences) {
+    if (a.type === "FORMATION") {
+      formationHours += a.hours ?? 0;
+      continue;
+    }
     const from = a.startDate > start ? a.startDate : start;
     const to = a.endDate < end ? a.endDate : end;
     let cursor = startOfParisDay(from);
@@ -69,6 +77,7 @@ export async function computeMonthlyRecap(userId: string, month: number, year: n
     weeklyContractHours: contractHours,
     workedMinutesByDay,
     absenceHours,
+    formationHours,
     adjustmentMinutes,
     rules,
   });
