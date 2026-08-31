@@ -39,7 +39,7 @@ export default function SearchBar({ people }: { people: Person[] }) {
         }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
-        placeholder="Rechercher un employé…"
+        placeholder="Rechercher dans l'équipe…"
         className="w-full rounded border border-ardoise-300 bg-white py-2 pl-9 pr-3 text-sm text-ardoise-800 transition-all duration-200 ease-premium placeholder:text-ardoise-400 focus:border-faraday-700 focus:outline-none focus:ring-1 focus:ring-faraday-700/30"
       />
       {open && results.length > 0 && (

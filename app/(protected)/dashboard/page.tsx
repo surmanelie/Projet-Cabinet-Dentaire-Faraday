@@ -76,23 +76,23 @@ export default async function DashboardPage() {
         <div className="rounded-md border border-faraday-300 bg-faraday-50 p-6">
           <h2 className="section-title text-faraday-800">Bienvenue — configurons votre cabinet</h2>
           <ol className="mt-4 space-y-1.5 text-sm text-faraday-800">
-            <li>1. Ajoutez un employé (nom, identifiant, mot de passe).</li>
+            <li>1. Ajoutez une assistante (nom, identifiant, mot de passe).</li>
             <li>2. Donnez-lui un code de pointage à 4 chiffres.</li>
             <li>3. Affichez ou imprimez les QR codes pour le pointage.</li>
           </ol>
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/equipe" className="btn-primary">Ajouter un employé</Link>
+            <Link href="/equipe" className="btn-primary">Ajouter une assistante</Link>
             <Link href="/equipe/pointage" className="btn-secondary">Voir les QR codes</Link>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Employés actifs" value={activeAssistants} />
+        <StatCard label="Assistantes actives" value={activeAssistants} />
         <StatCard label="Praticiens actifs" value={activePractitioners} />
         <StatCard label="Présents aujourd'hui" value={presentToday} tone="success" />
         <StatCard label="Absences aujourd'hui" value={absencesToday} tone={absencesToday > 0 ? "warning" : "default"} />
-        <StatCard label="Congés à venir (30j)" value={upcomingLeaves} />
+        <StatCard label="Absences à venir (30j)" value={upcomingLeaves} />
         <StatCard label="Heures non validées" value={unvalidatedEntries} tone={unvalidatedEntries > 0 ? "warning" : "default"} />
         <StatCard label="Validations mensuelles en attente" value={pendingMonthly} tone={pendingMonthly > 0 ? "danger" : "default"} />
       </div>

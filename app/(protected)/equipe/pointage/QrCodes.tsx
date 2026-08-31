@@ -18,7 +18,7 @@ export default function QrCodes({ appUrl }: { appUrl: string }) {
         </button>
       </div>
       <p className="mb-4 text-xs text-ardoise-500">
-        L&apos;employé scanne ce QR, saisit son <strong>code personnel à 4 chiffres</strong>, et
+        L&apos;assistante scanne ce QR, saisit son <strong>code personnel à 4 chiffres</strong>, et
         l&apos;application ne propose que la bonne action (commencer la journée, une pause, reprendre,
         ou terminer) selon son état du moment.
       </p>

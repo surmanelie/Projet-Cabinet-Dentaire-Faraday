@@ -121,7 +121,7 @@ export default function MonthAgenda({
 
               {isAbsence ? (
                 <div className="mt-1.5 rounded-md bg-amber-50 px-1.5 py-1 text-center text-[11px] font-medium text-amber-700 sm:text-xs">
-                  {entry?.comment ?? "Congé"}
+                  {entry?.comment ?? "Absence"}
                 </div>
               ) : plannedStart && plannedEnd ? (
                 <div className="mt-1.5 rounded-md bg-faraday-50 px-1.5 py-1 text-center text-[11px] font-medium text-faraday-700 sm:text-xs">
@@ -169,7 +169,7 @@ export default function MonthAgenda({
 
       <div className="mt-4 flex flex-wrap gap-3 text-xs text-ardoise-500">
         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded bg-faraday-50 ring-1 ring-faraday-200" /> Horaire prévu</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded bg-amber-50 ring-1 ring-amber-200" /> Congé</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded bg-amber-50 ring-1 ring-amber-200" /> Absence</span>
         <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded border border-faraday-500 bg-faraday-50" /> Aujourd&apos;hui</span>
         {selectable && <span className="inline-flex items-center gap-1.5">🔒 Jour verrouillé (mois validé)</span>}
       </div>

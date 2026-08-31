@@ -28,7 +28,7 @@ export default async function MesHorairesPage({
       <div>
         <SectionLabel>Agenda</SectionLabel>
         <h1 className="mt-3 page-title">Mon agenda</h1>
-        <p className="mt-2 text-sm text-ardoise-500">Vos horaires prévus, vos congés et vos heures pointées.</p>
+        <p className="mt-2 text-sm text-ardoise-500">Vos horaires prévus, vos absences et vos heures pointées.</p>
       </div>
 
       <MonthAgenda

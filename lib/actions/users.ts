@@ -65,7 +65,6 @@ export async function createUserAction(
   const lastName = String(formData.get("lastName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const role = String(formData.get("role") ?? "") as Role;
-  const phone = String(formData.get("phone") ?? "").trim() || null;
   const color = String(formData.get("color") ?? "#3f7e75");
   const contractType = String(formData.get("contractType") ?? "TEMPS_PLEIN") as ContractType;
   const weeklyContractHours = Number(formData.get("weeklyContractHours") ?? 35);
@@ -115,7 +114,6 @@ export async function createUserAction(
       firstName,
       lastName,
       email,
-      phone,
       color,
       role,
       passwordHash: await hashPassword(password),
@@ -150,7 +148,6 @@ export async function updateUserAction(
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const phone = String(formData.get("phone") ?? "").trim() || null;
   const color = String(formData.get("color") ?? "#3f7e75");
   const contractType = String(formData.get("contractType") ?? "TEMPS_PLEIN") as ContractType;
   const weeklyContractHours = Number(formData.get("weeklyContractHours") ?? 35);
@@ -196,7 +193,6 @@ export async function updateUserAction(
       firstName,
       lastName,
       email,
-      phone,
       color,
       ...(clockPinHash ? { clockPinHash } : {}),
       ...(password.trim().length > 0 && {

@@ -3,14 +3,14 @@
 import { useState } from "react";
 import UserForm from "./UserForm";
 
-/** Bouton "+ Ajouter un employé" ouvrant un modal contenant le formulaire de création. */
+/** Bouton "+ Ajouter une assistante" ouvrant un modal contenant le formulaire de création. */
 export default function AddUserModal() {
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <button className="btn-primary" onClick={() => setOpen(true)}>
-        + Ajouter un employé
+        + Ajouter une assistante
       </button>
 
       {open && (
@@ -23,7 +23,7 @@ export default function AddUserModal() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-1 flex items-center justify-between">
-              <h2 className="modal-title text-base sm:text-lg">Ajouter un employé</h2>
+              <h2 className="modal-title text-base sm:text-lg">Ajouter une assistante</h2>
               <button
                 className="text-ardoise-400 hover:text-ardoise-700"
                 onClick={() => setOpen(false)}

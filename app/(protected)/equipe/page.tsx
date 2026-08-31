@@ -13,7 +13,7 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Administrateur",
   RH: "RH",
   PRATICIEN: "Praticien",
-  ASSISTANT: "Employé",
+  ASSISTANT: "Assistante",
   COMPTABLE: "Comptable",
 };
 
@@ -30,7 +30,7 @@ export default async function EquipePage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <SectionLabel>Équipe</SectionLabel>
-          <h1 className="mt-3 page-title">Employés</h1>
+          <h1 className="mt-3 page-title">Assistantes</h1>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/equipe/heures" className="btn-ghost">

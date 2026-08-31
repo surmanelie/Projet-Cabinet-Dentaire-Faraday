@@ -43,7 +43,7 @@ export default function SettingsForm({ settings }: { settings: Settings }) {
           defaultChecked={settings.allowLeaveRequests}
         />
         <label htmlFor="allowLeaveRequests" className="text-sm text-ardoise-700">
-          Autoriser les demandes de congé en libre-service
+          Autoriser les demandes d&apos;absence en libre-service
         </label>
       </div>
       <div>
