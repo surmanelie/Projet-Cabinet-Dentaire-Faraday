@@ -157,21 +157,31 @@ export function computePartTimeWeek(
   };
 }
 
-export type ScheduleTemplateByDow = Record<number, { startTime: string; endTime: string }>;
+export type ScheduleTemplateByDow = Record<
+  number,
+  { startTime: string; endTime: string; breakStart?: string | null; breakEnd?: string | null }
+>;
 export type PlannedDayOverride = { plannedStart?: string | null; plannedEnd?: string | null };
 
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
 
+/** Durée (en minutes) de la pause déjeuner d'un gabarit de semaine type, si définie. */
+function templateBreakMinutes(tpl: ScheduleTemplateByDow[number] | undefined): number {
+  if (!tpl?.breakStart || !tpl?.breakEnd) return 0;
+  const diff = timeToMinutes(tpl.breakEnd) - timeToMinutes(tpl.breakStart);
+  return diff > 0 ? diff : 0;
+}
+
 /**
  * Heures « programmées » (planning) d'UN jour — distinctes des heures
  * réellement pointées. L'horaire effectif est celui de l'override
  * `WorkEntry.plannedStart/plannedEnd` s'il existe, sinon celui de la
- * semaine type (`ScheduleTemplate`) du jour de semaine correspondant.
- * Aucune pause n'est déduite ici (les gabarits de semaine type n'ont pas
- * de durée de pause exploitée ailleurs dans l'app — même simplification
- * que l'affichage actuel de l'agenda).
+ * semaine type (`ScheduleTemplate`) du jour de semaine correspondant. La
+ * pause déjeuner de la semaine type (`breakStart`/`breakEnd`) est toujours
+ * déduite — y compris sur un jour dont l'horaire a été modifié en masse —
+ * car c'est une politique par jour de semaine, jamais du temps de travail.
  */
 export function computeProgrammedMinutesForDay(
   templatesByDow: ScheduleTemplateByDow,
@@ -179,10 +189,11 @@ export function computeProgrammedMinutesForDay(
   dayOfWeek: number,
   rounding: RulesConfig["rounding"] = "EXACT"
 ): number {
-  const start = override?.plannedStart ?? templatesByDow[dayOfWeek]?.startTime ?? null;
-  const end = override?.plannedEnd ?? templatesByDow[dayOfWeek]?.endTime ?? null;
+  const tpl = templatesByDow[dayOfWeek];
+  const start = override?.plannedStart ?? tpl?.startTime ?? null;
+  const end = override?.plannedEnd ?? tpl?.endTime ?? null;
   if (!start || !end) return 0;
-  return computeDayMinutes({ start, end, breakMinutes: 0 }, rounding);
+  return computeDayMinutes({ start, end, breakMinutes: templateBreakMinutes(tpl) }, rounding);
 }
 
 /**
@@ -212,6 +223,8 @@ export type MonthlySummaryInput = {
   weeklyContractHours: number;
   workedMinutesByDay: number[]; // une entrée par jour travaillé du mois
   absenceHours: number;
+  /** Heures de formation (comptées au contrat, jamais pointées — distinctes des heures travaillées). */
+  formationHours: number;
   adjustmentMinutes: number; // positif ou négatif, ajustements manuels (non majorés)
   rules?: RulesConfig;
 };
@@ -220,6 +233,8 @@ export type MonthlySummary = {
   totalPlannedHours: number;
   totalWorkedHours: number;
   totalAbsenceHours: number;
+  /** Heures de formation — jamais confondues avec `totalWorkedHours` (temps réellement pointé au cabinet). */
+  totalFormationHours: number;
   totalAdjustmentHours: number;
   overtimeHours: number;
   deficitHours: number;
@@ -241,10 +256,16 @@ export function computeMonthlySummary(input: MonthlySummaryInput): MonthlySummar
   const weeksInMonth = 4.33;
   const contractHoursForMonth = input.weeklyContractHours * weeksInMonth;
 
+  // Les heures de formation comptent au contrat (comme une absence) mais ne
+  // sont jamais pointées : on les ajoute au temps "effectif" pour le calcul
+  // des heures sup./du déficit, sans jamais les fusionner avec le temps
+  // réellement travaillé au cabinet (`totalWorkedHours` reste inchangé).
+  const effectiveHours = totalWorkedHours + input.formationHours;
+
   const weekly =
     input.contractType === "TEMPS_PARTIEL"
-      ? computePartTimeWeek(totalWorkedHours / weeksInMonth, input.weeklyContractHours, rules)
-      : computeFullTimeWeek(totalWorkedHours / weeksInMonth, input.weeklyContractHours, rules);
+      ? computePartTimeWeek(effectiveHours / weeksInMonth, input.weeklyContractHours, rules)
+      : computeFullTimeWeek(effectiveHours / weeksInMonth, input.weeklyContractHours, rules);
 
   const overtimeHoursMonthly =
     (weekly.overtimeTier1Hours + weekly.overtimeTier2Hours + weekly.complementaryTier1Hours + weekly.complementaryTier2Hours) *
@@ -257,10 +278,11 @@ export function computeMonthlySummary(input: MonthlySummaryInput): MonthlySummar
     totalPlannedHours: contractHoursForMonth,
     totalWorkedHours,
     totalAbsenceHours: input.absenceHours,
+    totalFormationHours: input.formationHours,
     totalAdjustmentHours: adjustmentHours,
     overtimeHours: overtimeHoursMonthly,
     deficitHours: deficitHoursMonthly,
     balanceHours:
-      totalWorkedHours + input.absenceHours + adjustmentHours - contractHoursForMonth,
+      effectiveHours + input.absenceHours + adjustmentHours - contractHoursForMonth,
   };
 }

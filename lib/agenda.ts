@@ -34,7 +34,12 @@ export async function getAgendaData(userId: string, year: number, month: number)
 
   const templatesByDow: Record<number, DayTemplate> = {};
   for (const t of templates) {
-    templatesByDow[t.dayOfWeek] = { startTime: t.startTime, endTime: t.endTime };
+    templatesByDow[t.dayOfWeek] = {
+      startTime: t.startTime,
+      endTime: t.endTime,
+      breakStart: t.breakStart,
+      breakEnd: t.breakEnd,
+    };
   }
 
   const entriesByDate: Record<string, DayEntry> = {};

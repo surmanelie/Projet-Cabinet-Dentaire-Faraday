@@ -6,7 +6,7 @@ const MONTHS = [
 ];
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
-export type DayTemplate = { startTime: string; endTime: string };
+export type DayTemplate = { startTime: string; endTime: string; breakStart?: string | null; breakEnd?: string | null };
 export type DayEntry = {
   source: string;
   actualStart: string | null;
@@ -126,6 +126,11 @@ export default function MonthAgenda({
               ) : plannedStart && plannedEnd ? (
                 <div className="mt-1.5 rounded-md bg-faraday-50 px-1.5 py-1 text-center text-[11px] font-medium text-faraday-700 sm:text-xs">
                   {plannedStart}–{plannedEnd}
+                  {tpl?.breakStart && tpl?.breakEnd && (
+                    <span className="block text-[9px] font-normal text-faraday-500 sm:text-[10px]">
+                      pause {tpl.breakStart}–{tpl.breakEnd}
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div className="mt-1.5 text-center text-[11px] text-ardoise-300 sm:text-xs">repos</div>

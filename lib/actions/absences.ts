@@ -42,8 +42,8 @@ function eachDay(start: Date, end: Date): Date[] {
  * période devient une journée "absence" (aucune heure attendue), visible dans
  * le planning. Ne touche pas une journée déjà verrouillée.
  */
-async function markAbsenceInSchedule(userId: string, start: Date, end: Date, type: string) {
-  const label = ABSENCE_LABELS[type] ?? "Absence";
+async function markAbsenceInSchedule(userId: string, start: Date, end: Date, type: string, hours?: number | null) {
+  const label = type === "FORMATION" && hours ? `Formation (${hours}h)` : ABSENCE_LABELS[type] ?? "Absence";
   for (const day of eachDay(start, end)) {
     const existing = await prisma.workEntry.findUnique({ where: { userId_date: { userId, date: day } } });
     if (existing?.locked) continue;
@@ -79,11 +79,22 @@ export async function requestAbsenceAction(
 
   const type = String(formData.get("type") ?? "") as AbsenceType;
   const startDate = String(formData.get("startDate") ?? "");
-  const endDate = String(formData.get("endDate") ?? "");
+  const isFormation = type === "FORMATION";
+  // Une formation est un jour précis avec un nombre d'heures, pas une plage
+  // de dates — le formulaire ne soumet donc pas de endDate dans ce cas.
+  const endDate = isFormation ? startDate : String(formData.get("endDate") ?? "");
   const comment = String(formData.get("comment") ?? "").trim();
 
   if (!type || !startDate || !endDate) {
     return { error: "Merci de renseigner le type et les dates de l'absence." };
+  }
+
+  let hours: number | null = null;
+  if (isFormation) {
+    hours = Number(formData.get("hours") ?? 0);
+    if (!hours || hours <= 0 || hours > 24) {
+      return { error: "Merci d'indiquer un nombre d'heures de formation valide." };
+    }
   }
 
   const start = new Date(startDate);
@@ -101,6 +112,7 @@ export async function requestAbsenceAction(
       type,
       startDate: start,
       endDate: end,
+      hours,
       comment: comment || null,
       status: "DEMANDE",
     },
@@ -114,6 +126,58 @@ export async function requestAbsenceAction(
   );
 
   revalidatePath("/absences");
+  return { success: true };
+}
+
+export type FormationFormResult = { error?: string; success?: boolean };
+
+/**
+ * L'organisateur ajoute directement une journée de formation pour une
+ * assistante (sans passer par le workflow demande → validation, puisque
+ * c'est l'admin elle-même qui la programme). Mêmes effets qu'une absence
+ * FORMATION acceptée : comptée au contrat, jamais pointée.
+ */
+export async function addFormationForAssistantAction(
+  _prev: FormationFormResult,
+  formData: FormData
+): Promise<FormationFormResult> {
+  const session = await getSession();
+  if (!session || !isAdminOrRh(session.role)) return { error: "Non autorisé." };
+
+  const userId = String(formData.get("userId") ?? "");
+  const date = String(formData.get("date") ?? "");
+  const hours = Number(formData.get("hours") ?? 0);
+  const comment = String(formData.get("comment") ?? "").trim();
+
+  if (!userId || !date) return { error: "Merci de choisir l'assistante et la date." };
+  if (!hours || hours <= 0 || hours > 24) return { error: "Merci d'indiquer un nombre d'heures valide." };
+
+  const day = new Date(date);
+  if (Number.isNaN(day.getTime())) return { error: "Date invalide." };
+
+  const absence = await prisma.absence.create({
+    data: {
+      userId,
+      type: "FORMATION",
+      startDate: day,
+      endDate: day,
+      hours,
+      comment: comment || null,
+      status: "ACCEPTE",
+      reviewedById: session.id,
+      reviewedAt: new Date(),
+    },
+  });
+
+  await markAbsenceInSchedule(userId, day, day, "FORMATION", hours);
+
+  await writeAuditLog({ actorId: session.id, action: "ADD_FORMATION", entityType: "Absence", entityId: absence.id, newValue: { userId, date, hours } });
+  await notifyUser(userId, "Formation programmée", `Une formation de ${hours}h a été ajoutée à votre planning.`, "/absences");
+
+  revalidatePath("/absences");
+  revalidatePath("/planning");
+  revalidatePath("/equipe/heures");
+  revalidatePath("/mon-espace");
   return { success: true };
 }
 
@@ -131,7 +195,7 @@ export async function reviewAbsenceAction(absenceId: string, decision: "ACCEPTE"
 
   // Mise à jour automatique de l'emploi du temps selon la décision.
   if (decision === "ACCEPTE") {
-    await markAbsenceInSchedule(absence.userId, absence.startDate, absence.endDate, absence.type);
+    await markAbsenceInSchedule(absence.userId, absence.startDate, absence.endDate, absence.type, absence.hours);
   } else {
     await clearAbsenceFromSchedule(absence.userId, absence.startDate, absence.endDate);
   }
