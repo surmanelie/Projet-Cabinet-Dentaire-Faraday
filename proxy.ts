@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   "/login",
   "/api/auth/login",
   "/activer-compte",
+  "/mot-de-passe-oublie",
   "/pointer",
   "/robots.txt",
 ];

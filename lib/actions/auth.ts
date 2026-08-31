@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, hashPassword, createSession, destroySession, getSession } from "@/lib/auth";
-import { writeAuditLog } from "@/lib/audit";
+import { writeAuditLog, notifyUser } from "@/lib/audit";
 import { defaultRouteForRole } from "@/lib/permissions";
 import { validatePasswordStrength, getClientIp, isLoginBlocked, RATE_LIMITS } from "@/lib/security";
 
@@ -157,6 +157,42 @@ export async function changeOwnPasswordAction(
   await writeAuditLog({ actorId: session.id, action: "CHANGE_OWN_PASSWORD", entityType: "User", entityId: session.id });
 
   redirect(defaultRouteForRole(session.role));
+}
+
+export type ForgotPasswordResult = { submitted?: boolean };
+
+/**
+ * « Mot de passe oublié » : ne réinitialise rien automatiquement (pas de
+ * lien magique par email) — prévient simplement les administrateurs
+ * qu'une personne a besoin d'un nouveau mot de passe, à créer et à lui
+ * transmettre depuis Équipe → Modifier. Message de confirmation identique
+ * que l'email existe ou non, pour ne jamais révéler quels comptes existent.
+ */
+export async function requestForgotPasswordAction(
+  _prev: ForgotPasswordResult,
+  formData: FormData
+): Promise<ForgotPasswordResult> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email) return { submitted: true };
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (user && user.active) {
+    const admins = await prisma.user.findMany({ where: { role: "ADMIN", active: true } });
+    await Promise.all(
+      admins.map((a) =>
+        notifyUser(
+          a.id,
+          "Mot de passe oublié",
+          `${user.firstName} ${user.lastName} (${user.email}) a besoin d'un nouveau mot de passe.`,
+          "/equipe"
+        )
+      )
+    );
+    await writeAuditLog({ actorId: null, action: "FORGOT_PASSWORD_REQUEST", entityType: "User", entityId: user.id, ipAddress: await getClientIp() });
+  }
+
+  // Toujours la même réponse, indépendamment du résultat de la recherche.
+  return { submitted: true };
 }
 
 export async function logoutAction() {

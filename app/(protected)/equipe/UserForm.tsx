@@ -210,7 +210,7 @@ export default function UserForm({
         </div>
         <p className="mt-1 text-xs text-ardoise-400">
           {isEdit
-            ? "Si rempli, le mot de passe est remplacé immédiatement (min. 8 caractères)."
+            ? "Si rempli, ce mot de passe remplace l'ancien immédiatement (min. 8 caractères) — transmettez-le à la personne, elle devra le personnaliser à sa prochaine connexion."
             : "La personne se connecte directement avec ce mot de passe (min. 8 caractères), et devra le personnaliser à sa première connexion."}
         </p>
       </div>

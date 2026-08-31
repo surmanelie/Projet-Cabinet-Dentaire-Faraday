@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { isAdminOrRh } from "@/lib/permissions";
 import { getAgendaData, dateKey } from "@/lib/agenda";
 import { computeMonthlyRecap } from "@/lib/actions/monthly-validation";
+import { computeProgrammedMinutesForMonth } from "@/lib/hours-engine";
 import SectionLabel from "@/components/SectionLabel";
 import MonthAgenda from "@/components/MonthAgenda";
 import SelectablePlanningCalendar from "@/components/SelectablePlanningCalendar";
@@ -69,6 +70,7 @@ export default async function PlanningPage({
     : { templatesByDow: {}, entriesByDate: {} };
 
   let hours = { worked: 0, target: 0, overtime: 0, missing: 0 };
+  let formationHoursThisMonth = 0;
   if (selectedId) {
     try {
       const recap = await computeMonthlyRecap(selectedId, month, year);
@@ -78,10 +80,24 @@ export default async function PlanningPage({
         overtime: recap.overtimeHours,
         missing: recap.deficitHours,
       };
+      formationHoursThisMonth = recap.totalFormationHours;
     } catch {
       /* pas de données */
     }
   }
+
+  // Heures programmées ce mois (planning, distinct des heures réellement
+  // pointées ci-dessus) vs le contrat — affiché juste à côté pour que
+  // l'admin voie immédiatement si le mois est suffisamment programmé. Les
+  // heures de formation déjà accordées comptent au contrat sans avoir
+  // besoin d'être programmées au cabinet : elles réduisent d'autant ce qui
+  // reste à planifier.
+  const programmedMinutes = selectedId
+    ? computeProgrammedMinutesForMonth(templatesByDow, entriesByDate, year, month)
+    : 0;
+  const programmedHours = programmedMinutes / 60;
+  const contractMonthlyHours = (selected?.assistantProfile?.weeklyContractHours ?? 35) * 4.33;
+  const remainingToProgram = contractMonthlyHours - programmedHours - formationHoursThisMonth;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -96,17 +112,41 @@ export default async function PlanningPage({
       </div>
 
       {selected && (
-        <div className="card flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xl font-semibold tracking-tight text-ardoise-900">{selected.firstName} {selected.lastName}</p>
-            <p className="text-sm text-ardoise-500">Heures du mois</p>
-            <div className="mt-2 flex gap-2 text-sm">
-              <Link href={`/equipe/heures`} className="text-faraday-700 hover:underline">Suivi détaillé</Link>
-              <span className="text-ardoise-300">·</span>
-              <Link href="/equipe" className="text-faraday-700 hover:underline">Fiche</Link>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="card flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xl font-semibold tracking-tight text-ardoise-900">{selected.firstName} {selected.lastName}</p>
+              <p className="text-sm text-ardoise-500">Heures effectuées ce mois</p>
+              <div className="mt-2 flex gap-2 text-sm">
+                <Link href={`/equipe/heures`} className="text-faraday-700 hover:underline">Suivi détaillé</Link>
+                <span className="text-ardoise-300">·</span>
+                <Link href="/equipe" className="text-faraday-700 hover:underline">Fiche</Link>
+              </div>
             </div>
+            <HoursGauge worked={hours.worked} target={hours.target} overtime={hours.overtime} missing={hours.missing} size={140} />
           </div>
-          <HoursGauge worked={hours.worked} target={hours.target} overtime={hours.overtime} missing={hours.missing} size={140} />
+
+          <div className="card flex flex-col justify-center gap-3">
+            <p className="text-sm text-ardoise-500">Heures programmées ce mois (planning)</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-semibold tracking-tight text-ardoise-900">{programmedHours.toFixed(1)}</span>
+              <span className="text-sm text-ardoise-400">h / {contractMonthlyHours.toFixed(1)} h contrat</span>
+            </div>
+            <span
+              className={`badge w-fit ${remainingToProgram > 0 ? "bg-amber-50 text-amber-700" : remainingToProgram < 0 ? "bg-faraday-50 text-faraday-700" : "bg-ardoise-100 text-ardoise-500"}`}
+            >
+              {remainingToProgram > 0.05
+                ? `${remainingToProgram.toFixed(1)} h reste à programmer`
+                : remainingToProgram < -0.05
+                  ? `+${Math.abs(remainingToProgram).toFixed(1)} h supp. programmées`
+                  : "Mois complet"}
+            </span>
+            {formationHoursThisMonth > 0 && (
+              <p className="text-xs text-ardoise-400">
+                dont {formationHoursThisMonth.toFixed(1)} h de formation déjà comptées au contrat (non programmées ici)
+              </p>
+            )}
+          </div>
         </div>
       )}
 
