@@ -201,7 +201,9 @@ export async function updateUserAction(
       ...(clockPinHash ? { clockPinHash } : {}),
       ...(password.trim().length > 0 && {
         passwordHash: await hashPassword(password),
-        mustChangePassword: false,
+        // Comme à la création du compte : la personne doit personnaliser ce
+        // mot de passe (transmis par l'admin) dès sa prochaine connexion.
+        mustChangePassword: true,
         inviteToken: null,
         inviteTokenExpiresAt: null,
       }),

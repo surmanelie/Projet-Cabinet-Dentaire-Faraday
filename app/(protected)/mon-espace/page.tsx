@@ -118,15 +118,16 @@ export default async function MonEspacePage() {
       <div className="card flex flex-col items-center">
         <p className="mb-2 self-start text-[11px] font-semibold uppercase tracking-wider2 text-ardoise-400">Mes heures ce mois</p>
         <HoursGauge worked={monthWorked} target={monthTarget} overtime={overtime} missing={deficit} />
-        <div className="mt-4 grid w-full grid-cols-2 gap-3">
+        <div className="mt-4 grid w-full grid-cols-3 gap-3">
           <Tile label="Aujourd'hui" value={formatHM(todayMin)} />
           <Tile label="Cette semaine" value={formatHM(weekMin)} />
+          <Tile label="Ce mois" value={formatHM(monthWorked * 60)} />
         </div>
       </div>
 
       {/* Actions secondaires */}
       <div className="grid grid-cols-2 gap-3">
-        <Link href="/absences" className="btn-secondary">Demander des congés</Link>
+        <Link href="/absences" className="btn-secondary">Mes absences</Link>
         <Link href="/mes-horaires" className="btn-secondary">Voir mes horaires</Link>
       </div>
 
