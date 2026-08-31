@@ -9,6 +9,7 @@ import { writeAuditLog } from "@/lib/audit";
 import { isAdminOrRh } from "@/lib/permissions";
 import { sendPasswordResetEmail, getAppUrl } from "@/lib/email";
 import { validatePasswordStrength } from "@/lib/security";
+import { generateRecurringFormation, clearGeneratedFormation } from "@/lib/actions/absences";
 import type { ContractType, Role } from "@prisma/client";
 
 export type UserFormResult = {
@@ -362,28 +363,55 @@ export async function unassignAssistantAction(assignmentId: string) {
 export type ScheduleTemplateInput = {
   userId: string;
   dayOfWeek: number;
-  startTime: string;
-  endTime: string;
+  dayType?: "HORAIRE" | "FORMATION";
+  startTime?: string;
+  endTime?: string;
   breakStart?: string;
   breakEnd?: string;
+  formationHours?: number;
 };
 
+/**
+ * Enregistre le jour type d'une assistante — soit un horaire récurrent
+ * (HORAIRE, comportement historique), soit une journée de formation
+ * récurrente (FORMATION) : dans ce cas, des absences FORMATION acceptées
+ * sont générées à l'avance pour chaque occurrence future du jour de semaine
+ * (voir `generateRecurringFormation`), et les anciennes occurrences générées
+ * par le précédent jour type de ce jour de semaine sont nettoyées.
+ */
 export async function upsertScheduleTemplateAction(input: ScheduleTemplateInput) {
   const session = await getVerifiedSession();
   if (!session || !isAdminOrRh(session.role)) throw new Error("Non autorisé");
 
+  const dayType = input.dayType ?? "HORAIRE";
+
+  const previous = await prisma.scheduleTemplate.findMany({ where: { userId: input.userId, dayOfWeek: input.dayOfWeek } });
+  await clearGeneratedFormation(input.userId, previous.map((t) => t.id));
   await prisma.scheduleTemplate.deleteMany({ where: { userId: input.userId, dayOfWeek: input.dayOfWeek } });
-  await prisma.scheduleTemplate.create({
-    data: {
-      userId: input.userId,
-      dayOfWeek: input.dayOfWeek,
-      startTime: input.startTime,
-      endTime: input.endTime,
-      breakStart: input.breakStart,
-      breakEnd: input.breakEnd,
-    },
+
+  const template = await prisma.scheduleTemplate.create({
+    data:
+      dayType === "FORMATION"
+        ? { userId: input.userId, dayOfWeek: input.dayOfWeek, dayType, formationHours: input.formationHours }
+        : {
+            userId: input.userId,
+            dayOfWeek: input.dayOfWeek,
+            dayType,
+            startTime: input.startTime,
+            endTime: input.endTime,
+            breakStart: input.breakStart,
+            breakEnd: input.breakEnd,
+          },
   });
+
+  if (dayType === "FORMATION" && input.formationHours) {
+    await generateRecurringFormation(input.userId, input.dayOfWeek, template.id, input.formationHours);
+  }
 
   await writeAuditLog({ actorId: session.id, action: "SET_SCHEDULE_TEMPLATE", entityType: "ScheduleTemplate", entityId: input.userId, newValue: input });
   revalidatePath("/equipe");
+  revalidatePath("/planning");
+  revalidatePath("/absences");
+  revalidatePath("/equipe/heures");
+  revalidatePath("/mon-espace");
 }

@@ -32,8 +32,13 @@ export async function getAgendaData(userId: string, year: number, month: number)
     prisma.workEntry.findMany({ where: { userId, date: { gte: start, lte: end } } }),
   ]);
 
+  // Un jour type "FORMATION" n'a pas d'horaire (pas de fallback à afficher
+  // ici) : ses occurrences sont matérialisées en avance sous forme
+  // d'absences réelles (voir `generateRecurringFormation`), qui apparaissent
+  // via `entriesByDate` comme n'importe quelle absence.
   const templatesByDow: Record<number, DayTemplate> = {};
   for (const t of templates) {
+    if (t.dayType === "FORMATION" || !t.startTime || !t.endTime) continue;
     templatesByDow[t.dayOfWeek] = {
       startTime: t.startTime,
       endTime: t.endTime,
