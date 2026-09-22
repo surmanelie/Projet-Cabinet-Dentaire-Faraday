@@ -39,7 +39,7 @@ npm run build
 npm start
 ```
 
-## Comptes de démonstration (créés par `npm run db:seed`)
+## Comptes de démonstration 
 
 | Rôle | Email | Mot de passe |
 |---|---|---|
