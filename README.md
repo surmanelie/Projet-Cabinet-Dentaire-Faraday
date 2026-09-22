@@ -1,12 +1,10 @@
 # FaradayBoard — Cabinet Faraday
 
-Application interne de gestion des horaires, absences, congés, heures
-supplémentaires et validations mensuelles pour le Cabinet Faraday.
+Application de gestion des horaires, absences, congés, heures
+supplémentaires et validations mensuelles, développée pour le Cabinet
+Faraday et actuellement utilisée par le cabinet.
 
-**Ce n'est pas un produit SaaS.** FaradayBoard est conçu pour fonctionner en
-local, sur l'ordinateur du cabinet ou sur le réseau interne, avec une base de
-données SQLite locale. Aucun abonnement, aucun paiement, aucune dépendance à
-un service externe.
+L'application est déployée en ligne : [faradayboard.vercel.app](https://faradayboard.vercel.app)
 
 ## Stack technique
 
@@ -18,7 +16,7 @@ un service externe.
 - Génération de PDF (pdfkit) et export CSV (Excel, encodage UTF-8, format français)
 - PWA installable (manifest.json)
 
-## Installation
+## Installation (développement)
 
 Prérequis : Node.js 20+ et npm.
 
@@ -31,7 +29,9 @@ npm run dev
 
 L'application est alors disponible sur http://localhost:3000.
 
-## Mise en production (sur l'ordinateur du cabinet)
+## Déploiement
+
+L'application est déployée sur Vercel : [faradayboard.vercel.app](https://faradayboard.vercel.app)
 
 ```bash
 npm install
@@ -39,9 +39,6 @@ npx prisma migrate deploy
 npm run build
 npm start
 ```
-
-Pour un accès depuis les autres postes du cabinet, ouvrir le port 3000 sur le
-réseau local et accéder à `http://<ip-du-poste>:3000`.
 
 ## Comptes de démonstration (créés par `npm run db:seed`)
 
@@ -93,6 +90,7 @@ prisma/
 tests/                     Tests unitaires (Vitest)
 types/                     Types partagés
 ```
+
 
 ## Rôles et permissions
 
