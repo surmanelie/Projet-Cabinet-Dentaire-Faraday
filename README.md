@@ -27,7 +27,6 @@ npm run db:seed
 npm run dev
 ```
 
-L'application est alors disponible sur http://localhost:3000.
 
 ## Déploiement
 
