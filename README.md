@@ -39,18 +39,7 @@ npm run build
 npm start
 ```
 
-## Comptes de démonstration 
 
-| Rôle | Email | Mot de passe |
-|---|---|---|
-| Administrateur | admin@cabinet-faraday.fr | Admin123! |
-| RH / Responsable | rh@cabinet-faraday.fr | Rh123456! |
-| Comptable (lecture seule) | comptable@cabinet-faraday.fr | Compta123! |
-| Praticien | dr.bernard@cabinet-faraday.fr | Praticien1! |
-| Praticien | dr.lefevre@cabinet-faraday.fr | Praticien2! |
-| Assistante (temps plein) | assistante1@cabinet-faraday.fr | Assistante1! |
-| Assistante (temps partiel) | assistante2@cabinet-faraday.fr | Assistante2! |
-| Assistante (temps plein) | assistante3@cabinet-faraday.fr | Assistante3! |
 
 **Changez ces mots de passe dès la mise en production réelle.** Le seed est
 un jeu de données de démonstration ; rien n'est codé en dur dans
